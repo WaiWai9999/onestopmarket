@@ -11,18 +11,25 @@ import { useAuthStore } from '@/store/auth.store';
 interface Product {
   id: string;
   name: string;
+  description: string;
   price: number;
   stock: number;
   imageUrl: string | null;
-  category: { name: string };
+  category: { id: string; name: string };
+  categoryId: string;
 }
+
+type FormState = { name: string; description: string; price: string; stock: string; categoryId: string };
+
+const emptyForm: FormState = { name: '', description: '', price: '', stock: '', categoryId: '' };
 
 export default function AdminProductsPage() {
   const { user, isAdmin } = useAuthStore();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', price: '', stock: '', categoryId: '' });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormState>(emptyForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -41,9 +48,9 @@ export default function AdminProductsPage() {
     enabled: !!user && isAdmin(),
   });
 
-  const createMutation = useMutation({
-    mutationFn: async (productId?: string) => {
-      // If creating new product
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      let productId = editingId;
       if (!productId) {
         const { data } = await api.post('/products', {
           name: form.name,
@@ -53,8 +60,15 @@ export default function AdminProductsPage() {
           categoryId: form.categoryId,
         });
         productId = data.id;
+      } else {
+        await api.patch(`/products/${productId}`, {
+          name: form.name,
+          description: form.description,
+          price: Number(form.price),
+          stock: Number(form.stock),
+          categoryId: form.categoryId,
+        });
       }
-      // Upload image if selected
       if (imageFile && productId) {
         const formData = new FormData();
         formData.append('image', imageFile);
@@ -64,7 +78,8 @@ export default function AdminProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       setShowForm(false);
-      setForm({ name: '', description: '', price: '', stock: '', categoryId: '' });
+      setEditingId(null);
+      setForm(emptyForm);
       setImageFile(null);
     },
   });
@@ -74,9 +89,30 @@ export default function AdminProductsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-products'] }),
   });
 
+  const handleEdit = (product: Product) => {
+    setEditingId(product.id);
+    setForm({
+      name: product.name,
+      description: product.description,
+      price: String(product.price),
+      stock: String(product.stock),
+      categoryId: product.categoryId,
+    });
+    setImageFile(null);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setForm(emptyForm);
+    setImageFile(null);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate(undefined);
+    saveMutation.mutate();
   };
 
   if (isLoading) return <p className="text-center py-16 text-gray-500">Loading...</p>;
@@ -84,72 +120,80 @@ export default function AdminProductsPage() {
   return (
     <main className="max-w-6xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Product Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Product Management</h1>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) { handleCancel(); } else { setShowForm(true); }
+          }}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           {showForm ? 'Cancel' : '+ New Product'}
         </button>
       </div>
 
-      {/* Create Form */}
+      {/* Create / Edit Form */}
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-gray-50 border rounded-lg p-6 mb-8 space-y-4">
-          <h2 className="font-semibold">New Product</h2>
+          <h2 className="font-semibold text-gray-900">{editingId ? 'Edit Product' : 'New Product'}</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Name</label>
               <input
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border rounded px-3 py-2 text-gray-900"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Category ID</label>
-              <input
+              <label className="block text-sm font-medium mb-1 text-gray-900">Category</label>
+              <select
                 required
                 value={form.categoryId}
                 onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                placeholder="Paste category UUID"
-                className="w-full border rounded px-3 py-2"
-              />
+                className="w-full border rounded px-3 py-2 text-gray-900"
+              >
+                <option value="">Select category</option>
+                {categories?.map((c: { id: string; name: string }) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Price (¥)</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Price (¥)</label>
               <input
                 required
                 type="number"
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border rounded px-3 py-2 text-gray-900"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Stock</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Stock</label>
               <input
                 required
                 type="number"
                 value={form.stock}
                 onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border rounded px-3 py-2 text-gray-900"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="block text-sm font-medium mb-1 text-gray-900">Description</label>
             <textarea
               required
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-2 text-gray-900"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Image</label>
+            <label className="block text-sm font-medium mb-1 text-gray-900">
+              Image {editingId && <span className="text-gray-500 font-normal">(leave empty to keep current)</span>}
+            </label>
             <input
               type="file"
               accept="image/*"
@@ -158,10 +202,10 @@ export default function AdminProductsPage() {
           </div>
           <button
             type="submit"
-            disabled={createMutation.isPending}
+            disabled={saveMutation.isPending}
             className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
           >
-            {createMutation.isPending ? 'Saving...' : 'Save Product'}
+            {saveMutation.isPending ? 'Saving...' : editingId ? 'Update Product' : 'Save Product'}
           </button>
         </form>
       )}
@@ -191,11 +235,17 @@ export default function AdminProductsPage() {
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 font-medium">{product.name}</td>
+                <td className="px-4 py-3 font-medium text-gray-900">{product.name}</td>
                 <td className="px-4 py-3 text-gray-500">{product.category.name}</td>
-                <td className="px-4 py-3">¥{product.price.toLocaleString()}</td>
-                <td className="px-4 py-3">{product.stock}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-gray-900">¥{product.price.toLocaleString()}</td>
+                <td className="px-4 py-3 text-gray-900">{product.stock}</td>
+                <td className="px-4 py-3 flex gap-3">
+                  <button
+                    onClick={() => handleEdit(product)}
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    Edit
+                  </button>
                   <button
                     onClick={() => {
                       if (confirm('Delete this product?')) deleteMutation.mutate(product.id);
