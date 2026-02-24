@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
-import { extname } from 'path';
 
 @Injectable()
 export class UploadService {
@@ -21,8 +20,15 @@ export class UploadService {
   }
 
   async uploadImage(file: Express.Multer.File): Promise<string> {
-    const ext = extname(file.originalname); // e.g. .jpg
-    const key = `products/${randomUUID()}${ext}`; // e.g. products/uuid.jpg
+    // Use mimetype to determine extension so HEIC files converted by browser are stored as .jpg
+    const mimeToExt: Record<string, string> = {
+      'image/jpeg': '.jpg',
+      'image/png': '.png',
+      'image/webp': '.webp',
+      'image/gif': '.gif',
+    };
+    const ext = mimeToExt[file.mimetype] ?? '.jpg';
+    const key = `products/${randomUUID()}${ext}`;
 
     await this.s3.send(
       new PutObjectCommand({
