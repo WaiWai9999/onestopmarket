@@ -31,6 +31,7 @@ export default function AdminProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     if (!user || !isAdmin()) router.push('/');
@@ -50,7 +51,10 @@ export default function AdminProductsPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      setSaveError('');
       let productId = editingId;
+      const isNew = !productId;
+
       if (!productId) {
         const { data } = await api.post('/products', {
           name: form.name,
@@ -72,7 +76,13 @@ export default function AdminProductsPage() {
       if (imageFile && productId) {
         const formData = new FormData();
         formData.append('image', imageFile);
-        await api.post(`/products/${productId}/image`, formData);
+        try {
+          await api.post(`/products/${productId}/image`, formData);
+        } catch (err) {
+          // Rollback: delete newly created product if image upload fails
+          if (isNew) await api.delete(`/products/${productId}`);
+          throw err;
+        }
       }
     },
     onSuccess: () => {
@@ -81,6 +91,11 @@ export default function AdminProductsPage() {
       setEditingId(null);
       setForm(emptyForm);
       setImageFile(null);
+      setSaveError('');
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : 'Failed to save product';
+      setSaveError(msg);
     },
   });
 
@@ -112,6 +127,17 @@ export default function AdminProductsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (imageFile) {
+      const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowed.includes(imageFile.type)) {
+        setSaveError('Unsupported image format. Please use JPEG, PNG, or WebP. (HEIC is not supported — convert to JPEG first in Preview app)');
+        return;
+      }
+      if (imageFile.size > 5 * 1024 * 1024) {
+        setSaveError('Image is too large. Maximum size is 5MB.');
+        return;
+      }
+    }
     saveMutation.mutate();
   };
 
@@ -135,6 +161,7 @@ export default function AdminProductsPage() {
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-gray-50 border rounded-lg p-6 mb-8 space-y-4">
           <h2 className="font-semibold text-gray-900">{editingId ? 'Edit Product' : 'New Product'}</h2>
+          {saveError && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded">{saveError}</p>}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-900">Name</label>
