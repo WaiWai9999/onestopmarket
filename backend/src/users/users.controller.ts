@@ -19,9 +19,17 @@ export class UsersController {
   @Patch('me')
   updateProfile(
     @CurrentUser() user: any,
-    @Body() dto: { name?: string; email?: string; address?: string; phone?: string; password?: string },
+    @Body() dto: { name?: string; email?: string; address?: string; phone?: string },
   ) {
     return this.usersService.updateProfile(user.id, dto);
+  }
+
+  @Patch('me/password')
+  changePassword(
+    @CurrentUser() user: any,
+    @Body() dto: { currentPassword: string; newPassword: string },
+  ) {
+    return this.usersService.changePassword(user.id, dto);
   }
 
   // Admin only

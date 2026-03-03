@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <style>
+      .cls-1 { fill: #004a99; }
+      .cls-2 { fill: #ff8c00; }
+      .cls-3 { fill: #00a0a0; }
+      .cls-text { font-family: Arial, sans-serif; font-weight: bold; font-size: 32px; fill: #004a99; }
+    </style>
+  </defs>
+
+  <g id="Cart_Icon" transform="translate(100, 50)">
+
+    <!-- Cart frame -->
+    <path class="cls-1" d="M20,20 L40,20 C45,20 50,25 50,30 L50,100 C50,110 60,120 70,120 L150,120 C160,120 170,110 170,100 L170,80 M50,60 L170,60"
+          stroke="#004a99" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path class="cls-1" d="M15,15 L25,5 L25,30" stroke="#004a99" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <line class="cls-1" x1="0" y1="50" x2="30" y2="50" stroke="#004a99" stroke-width="4" stroke-linecap="round"/>
+    <line class="cls-1" x1="5" y1="70" x2="25" y2="70" stroke="#004a99" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Teal paper bag — rope handles + rect body -->
+    <path d="M81,65 C81,47 91,47 91,65" stroke="#007070" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M99,65 C99,47 109,47 109,65" stroke="#007070" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <rect x="70" y="65" width="50" height="43" rx="2" fill="#00a0a0"/>
+    <rect x="70" y="65" width="50" height="11" rx="2" fill="#008585"/>
+    <rect x="73" y="80" width="4" height="22" rx="2" fill="#00c8c8" opacity="0.4"/>
+
+    <!-- Orange paper bag — rope handles + rect body -->
+    <path d="M119,65 C119,48 129,48 129,65" stroke="#b06000" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M133,65 C133,48 143,48 143,65" stroke="#b06000" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <rect x="110" y="65" width="43" height="43" rx="2" fill="#ff8c00"/>
+    <rect x="110" y="65" width="43" height="10" rx="2" fill="#d97400"/>
+    <rect x="113" y="79" width="4" height="22" rx="2" fill="#ffcc66" opacity="0.4"/>
+
+    <!-- Wheels -->
+    <circle class="cls-2" cx="70" cy="135" r="10" fill="#ff8c00"/>
+    <circle cx="70" cy="135" r="5" fill="white"/>
+    <circle class="cls-2" cx="150" cy="135" r="10" fill="#ff8c00"/>
+    <circle cx="150" cy="135" r="5" fill="white"/>
+    <line x1="170" y1="135" x2="190" y2="135" stroke="#ff8c00" stroke-width="4" stroke-linecap="round"/>
+
+  </g>
+
+  <!-- Text -->
+  <text x="200" y="245" text-anchor="middle" class="cls-text">
+    <tspan fill="#004a99">OneStop</tspan><tspan fill="#ff8c00">Market</tspan>
+  </text>
+</svg>

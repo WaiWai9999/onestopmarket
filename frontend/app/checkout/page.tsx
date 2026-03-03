@@ -50,7 +50,7 @@ function CheckoutForm({ orderId }: { orderId: string }) {
       <button
         type="submit"
         disabled={!stripe || loading}
-        className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-lg hover:shadow-lg disabled:opacity-50 transition-all"
       >
         {loading ? 'Processing...' : 'Pay Now'}
       </button>
@@ -97,66 +97,72 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main className="max-w-xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-bold mb-6">Checkout</h1>
+    <main className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="md:col-span-2">
+        <h1 className="text-2xl font-bold mb-6">Checkout</h1>
 
-      {/* Order Summary */}
-      {cart && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h2 className="font-semibold mb-3">Order Summary</h2>
-          {cart.items.map((item) => (
-            <div key={item.id} className="flex justify-between text-sm py-1">
-              <span>{item.product.name} × {item.quantity}</span>
-              <span>¥{(item.product.price * item.quantity).toLocaleString()}</span>
+        {/* Step 1 — Shipping Address */}
+        {step === 'address' && (
+          <form onSubmit={handleProceedToPayment} className="space-y-4 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Address</label>
+              <textarea
+                required
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                rows={4}
+                placeholder="Tokyo, Shibuya-ku 1-1-1"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
             </div>
-          ))}
-          <div className="border-t mt-3 pt-3 flex justify-between font-bold">
-            <span>Total</span>
-            <span>¥{cart.total.toLocaleString()}</span>
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-lg hover:shadow-lg transition-all"
+            >
+              Continue to Payment
+            </button>
+          </form>
+        )}
+
+        {/* Step 2 — Stripe Payment */}
+        {step === 'payment' && clientSecret && (
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
+              <CheckoutForm orderId={orderId} />
+            </Elements>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Step 1 — Shipping Address */}
-      {step === 'address' && (
-        <form onSubmit={handleProceedToPayment} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Shipping Address
-            </label>
-            <textarea
-              required
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              rows={3}
-              placeholder="Tokyo, Shibuya-ku 1-1-1"
-              className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        {/* Test card hint */}
+        {step === 'payment' && (
+          <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
+            <p className="font-semibold">Test card:</p>
+            <p>Card number: 4242 4242 4242 4242</p>
+            <p>Expiry: any future date · CVC: any 3 digits</p>
           </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
-          >
-            Continue to Payment
-          </button>
-        </form>
-      )}
+        )}
+      </div>
 
-      {/* Step 2 — Stripe Payment */}
-      {step === 'payment' && clientSecret && (
-        <Elements stripe={stripePromise} options={{ clientSecret }}>
-          <CheckoutForm orderId={orderId} />
-        </Elements>
-      )}
-
-      {/* Test card hint */}
-      {step === 'payment' && (
-        <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
-          <p className="font-semibold">Test card:</p>
-          <p>Card number: 4242 4242 4242 4242</p>
-          <p>Expiry: any future date · CVC: any 3 digits</p>
-        </div>
-      )}
+      {/* Order Summary (right column) */}
+      <aside className="md:col-span-1">
+        {cart ? (
+          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 sticky top-24">
+            <h2 className="font-semibold mb-3">Order Summary</h2>
+            {cart.items.map((item) => (
+              <div key={item.id} className="flex justify-between text-sm py-1">
+                <span className="text-gray-700">{item.product.name} × {item.quantity}</span>
+                <span className="text-gray-700">¥{(item.product.price * item.quantity).toLocaleString()}</span>
+              </div>
+            ))}
+            <div className="border-t mt-3 pt-3 flex justify-between font-bold text-gray-800">
+              <span>Total</span>
+              <span>¥{cart.total.toLocaleString()}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">No items in cart</div>
+        )}
+      </aside>
     </main>
   );
 }

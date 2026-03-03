@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -13,7 +13,23 @@ export class UsersService {
     return rest;
   }
 
-  async updateProfile(userId: string, dto: { name?: string; email?: string; address?: string; phone?: string; password?: string }) {
+  async changePassword(userId: string, dto: { currentPassword: string; newPassword: string }) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    const isValid = await bcrypt.compare(dto.currentPassword, user.password);
+    if (!isValid) throw new UnauthorizedException('Current password is incorrect');
+
+    if (dto.newPassword.length < 8) {
+      throw new BadRequestException('New password must be at least 8 characters');
+    }
+
+    const hashed = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({ where: { id: userId }, data: { password: hashed } });
+    return { message: 'Password changed successfully' };
+  }
+
+  async updateProfile(userId: string, dto: { name?: string; email?: string; address?: string; phone?: string }) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -27,7 +43,6 @@ export class UsersService {
     if (dto.email) data.email = dto.email;
     if (dto.address !== undefined) data.address = dto.address;
     if (dto.phone !== undefined) data.phone = dto.phone;
-    if (dto.password) data.password = await bcrypt.hash(dto.password, 10);
 
     const updated = await this.prisma.user.update({ where: { id: userId }, data });
     const { password: _, ...rest } = updated;

@@ -40,42 +40,45 @@ export default function OrdersPage() {
 
   if (!user) {
     return (
-      <main className="max-w-2xl mx-auto px-6 py-16 text-center">
+      <div className="py-12 text-center">
         <p className="text-gray-500 mb-4">Please login to view your orders.</p>
         <button
           onClick={() => router.push('/login')}
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          className="bg-amber-400 text-gray-900 font-semibold px-6 py-2 rounded-full hover:bg-amber-300 transition-all"
         >
           Login
         </button>
-      </main>
+      </div>
     );
   }
 
-  if (isLoading) return <p className="text-center py-16 text-gray-500">Loading...</p>;
+  if (isLoading) return <p className="py-12 text-center text-gray-400">Loading...</p>;
 
   if (!orders || orders.length === 0) {
     return (
-      <main className="max-w-2xl mx-auto px-6 py-16 text-center">
+      <div className="py-12 text-center">
         <p className="text-gray-500 mb-4">No orders yet.</p>
-        <Link href="/products" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+        <Link
+          href="/products"
+          className="bg-amber-400 text-gray-900 font-semibold px-6 py-2 rounded-full hover:bg-amber-300 transition-all"
+        >
           Start Shopping
         </Link>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-bold mb-6">Order History</h1>
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Order History</h1>
 
       <div className="space-y-4">
         {orders.map((order) => (
-          <div key={order.id} className="border border-gray-200 rounded-lg p-6">
+          <div key={order.id} className="bg-white border border-gray-200 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs text-gray-400">Order ID</p>
-                <p className="font-mono text-sm">{order.id}</p>
+                <p className="font-mono text-sm text-gray-700">{order.id}</p>
               </div>
               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[order.status]}`}>
                 {order.status}
@@ -92,14 +95,14 @@ export default function OrdersPage() {
             </div>
 
             <div className="border-t pt-3 flex items-center justify-between">
-              <div className="text-sm text-gray-500">
+              <p className="text-sm text-gray-400">
                 {new Date(order.createdAt).toLocaleDateString('ja-JP')}
-              </div>
-              <p className="font-bold">¥{order.total.toLocaleString()}</p>
+              </p>
+              <p className="font-bold text-gray-900">¥{order.total.toLocaleString()}</p>
             </div>
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

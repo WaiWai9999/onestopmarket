@@ -46,10 +46,7 @@ export default function ProductDetailPage() {
   });
 
   const handleAddToCart = () => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
+    if (!user) { router.push('/login'); return; }
     setCartError('');
     addToCartMutation.mutate();
   };
@@ -59,55 +56,64 @@ export default function ProductDetailPage() {
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-8">
-      <Link href="/products" className="text-blue-600 hover:underline text-sm mb-6 block">
+      <Link href="/products" className="text-amber-500 hover:text-amber-600 text-sm mb-6 block font-medium">
         ← Back to Products
       </Link>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Image */}
-        <div className="h-80 bg-gray-100 rounded-lg relative overflow-hidden">
-          {product.imageUrl ? (
-            <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
-          )}
-        </div>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          {/* Image */}
+          <div className="h-80 bg-gray-100 relative">
+            {product.imageUrl ? (
+              <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
+            )}
+          </div>
 
-        {/* Details */}
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-gray-500">{product.category.name}</p>
-          <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
-          <p className="text-3xl font-bold text-blue-600">¥{product.price.toLocaleString()}</p>
-          <p className="text-gray-700">{product.description}</p>
-          <p className={`text-sm font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
-            {product.stock > 0 ? `In stock (${product.stock})` : 'Out of stock'}
-          </p>
+          {/* Details */}
+          <div className="p-8 flex flex-col gap-4">
+            <span className="text-xs font-semibold text-amber-500 uppercase tracking-wide bg-amber-50 px-3 py-1 rounded-full w-fit">
+              {product.category.name}
+            </span>
+            <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
+            <p className="text-3xl font-bold text-amber-500">¥{product.price.toLocaleString()}</p>
+            <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
 
-          {product.stock > 0 && (
-            <div className="flex items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Qty:</label>
-              <input
-                type="number"
-                min={1}
-                max={product.stock}
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="w-16 border border-gray-300 rounded px-2 py-1 text-gray-900 text-center"
-              />
+            <div className={`flex items-center gap-2 text-sm font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
+              <span className={`w-2 h-2 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+              {product.stock > 0 ? `In stock (${product.stock} available)` : 'Out of stock'}
             </div>
-          )}
 
-          {cartError && (
-            <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded">{cartError}</p>
-          )}
+            {product.stock > 0 && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-gray-700">Quantity:</span>
+                <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    className="px-3 py-1 text-gray-600 hover:bg-amber-50 transition-all"
+                  >−</button>
+                  <span className="px-4 py-1 text-gray-900 font-medium text-sm">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
+                    className="px-3 py-1 text-gray-600 hover:bg-amber-50 transition-all"
+                  >+</button>
+                </div>
+              </div>
+            )}
 
-          <button
-            onClick={handleAddToCart}
-            disabled={product.stock === 0 || addToCartMutation.isPending}
-            className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
-          >
-            {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
-          </button>
+            {cartError && (
+              <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{cartError}</p>
+            )}
+
+            <button
+              onClick={handleAddToCart}
+              disabled={product.stock === 0 || addToCartMutation.isPending}
+              className="bg-amber-400 text-gray-900 py-3 rounded-full hover:bg-amber-300 disabled:opacity-50 font-semibold transition-all shadow-sm mt-2"
+            >
+              {addToCartMutation.isPending ? 'Adding...' : '🛒 Add to Cart'}
+            </button>
+          </div>
         </div>
       </div>
     </main>

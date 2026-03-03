@@ -59,9 +59,13 @@ export class CartService {
     });
 
     if (existingItem) {
+      const newQuantity = existingItem.quantity + dto.quantity;
+      if (newQuantity > product.stock) {
+        throw new BadRequestException(`Only ${product.stock} in stock (you already have ${existingItem.quantity} in cart)`);
+      }
       return this.prisma.cartItem.update({
         where: { id: existingItem.id },
-        data: { quantity: existingItem.quantity + dto.quantity },
+        data: { quantity: newQuantity },
         include: { product: true },
       });
     }

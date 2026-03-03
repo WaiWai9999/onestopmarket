@@ -23,50 +23,63 @@ export default function AdminPage() {
 
   const { data: orders } = useQuery({
     queryKey: ['admin-orders'],
-    queryFn: () => api.get('/orders').then((r) => r.data),
+    queryFn: () => api.get('/orders/all').then((r) => r.data),
     enabled: !!user && isAdmin(),
   });
 
+  const { data: users } = useQuery({
+    queryKey: ['admin-users'],
+    queryFn: () => api.get('/users').then((r) => r.data),
+    enabled: !!user && isAdmin(),
+  });
+
+  const stats = [
+    { label: 'Total Products', value: products?.meta?.total ?? 0, href: '/admin/products', color: 'text-amber-500' },
+    { label: 'Total Orders', value: orders?.length ?? 0, href: '/admin/orders', color: 'text-green-600' },
+    { label: 'Total Users', value: users?.length ?? 0, href: '/admin/users', color: 'text-blue-500' },
+  ];
+
+  const quickLinks = [
+    { label: 'Product Management', desc: 'Add, edit and delete products', href: '/admin/products' },
+    { label: 'Order Management', desc: 'View and update order statuses', href: '/admin/orders' },
+    { label: 'User Management', desc: 'View users and manage roles', href: '/admin/users' },
+  ];
+
   return (
-    <main className="max-w-6xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-bold mb-8">Admin Dashboard</h1>
+    <div>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-6 mb-8">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <p className="text-sm text-blue-600 mb-1">Total Products</p>
-          <p className="text-3xl font-bold text-blue-800">{products?.meta?.total ?? 0}</p>
-        </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-          <p className="text-sm text-green-600 mb-1">Total Orders</p>
-          <p className="text-3xl font-bold text-green-800">{orders?.length ?? 0}</p>
-        </div>
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        {stats.map((s) => (
+          <Link
+            key={s.label}
+            href={s.href}
+            className="bg-gradient-to-br from-orange-50 to-white border border-orange-100 rounded-xl p-5 hover:border-orange-300 hover:shadow-md transition-all"
+          >
+            <p className="text-sm text-gray-600 mb-1">{s.label}</p>
+            <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+          </Link>
+        ))}
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-2 gap-4">
-        <Link
-          href="/admin/products"
-          className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition"
-        >
-          <h2 className="font-semibold text-lg mb-1 text-gray-900">Product Management</h2>
-          <p className="text-gray-500 text-sm">Add, edit and delete products</p>
-        </Link>
-        <Link
-          href="/admin/orders"
-          className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition"
-        >
-          <h2 className="font-semibold text-lg mb-1 text-gray-900">Order Management</h2>
-          <p className="text-gray-500 text-sm">View and update order status</p>
-        </Link>
-        <Link
-          href="/admin/users"
-          className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition"
-        >
-          <h2 className="font-semibold text-lg mb-1 text-gray-900">User Management</h2>
-          <p className="text-gray-500 text-sm">View users and change roles</p>
-        </Link>
+      <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Quick Access</h2>
+      <div className="grid grid-cols-1 gap-3">
+        {quickLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between hover:border-orange-300 hover:shadow-md transition-all group"
+          >
+            <div>
+              <p className="font-semibold text-gray-700 group-hover:text-orange-600 transition-colors">{link.label}</p>
+              <p className="text-sm text-gray-500 mt-0.5">{link.desc}</p>
+            </div>
+            <span className="text-gray-400 group-hover:text-orange-500 text-lg transition-colors">→</span>
+          </Link>
+        ))}
       </div>
-    </main>
+    </div>
   );
 }

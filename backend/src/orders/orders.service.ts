@@ -3,6 +3,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { OrderStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { PrismaService } from '../prisma/prisma.service';
@@ -72,6 +73,23 @@ export class OrdersService {
         items: { include: { product: true } },
       },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findAllAdmin() {
+    return this.prisma.order.findMany({
+      include: {
+        items: { include: { product: true } },
+        user: { select: { name: true, email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async updateStatus(orderId: string, status: OrderStatus) {
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { status },
     });
   }
 

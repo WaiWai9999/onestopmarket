@@ -37,54 +37,65 @@ export default function AdminUsersPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
   });
 
-  if (isLoading) return <p className="text-center py-16 text-gray-500">Loading...</p>;
+  if (isLoading) return <p className="py-16 text-center text-gray-400">Loading...</p>;
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">User Management</h1>
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Users</h1>
+        <span className="text-sm text-gray-400">{users?.length ?? 0} total</span>
+      </div>
 
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Name</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Email</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Phone</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Address</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Joined</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Role</th>
+          <thead>
+            <tr className="bg-gradient-to-r from-orange-100 to-teal-100">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Phone</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Joined</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Role</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-100">
             {users?.map((u) => (
-              <tr key={u.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
-                <td className="px-4 py-3 text-gray-600">{u.email}</td>
-                <td className="px-4 py-3 text-gray-500">{u.phone ?? '—'}</td>
-                <td className="px-4 py-3 text-gray-500 max-w-xs truncate">{u.address ?? '—'}</td>
-                <td className="px-4 py-3 text-gray-500 text-sm">
+              <tr key={u.id} className="hover:bg-orange-50 transition-colors">
+                <td className="px-4 py-3">
+                  <p className="font-medium text-gray-800">{u.name}</p>
+                  {u.address && <p className="text-xs text-gray-400 truncate max-w-[140px]">{u.address}</p>}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-600">{u.email}</td>
+                <td className="px-4 py-3 text-sm text-gray-500">{u.phone ?? '—'}</td>
+                <td className="px-4 py-3 text-sm text-gray-400">
                   {new Date(u.createdAt).toLocaleDateString('ja-JP')}
                 </td>
                 <td className="px-4 py-3">
-                  <select
-                    value={u.role}
-                    disabled={u.id === user?.id}
-                    onChange={(e) =>
-                      roleMutation.mutate({ id: u.id, role: e.target.value as 'CUSTOMER' | 'ADMIN' })
-                    }
-                    className={`border rounded px-2 py-1 text-sm text-gray-900 ${
-                      u.id === user?.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                    } ${u.role === 'ADMIN' ? 'border-blue-400 bg-blue-50' : 'border-gray-300'}`}
-                  >
-                    <option value="CUSTOMER">CUSTOMER</option>
-                    <option value="ADMIN">ADMIN</option>
-                  </select>
+                  {u.id === user?.id ? (
+                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                      {u.role} (you)
+                    </span>
+                  ) : (
+                    <select
+                      value={u.role}
+                      onChange={(e) =>
+                        roleMutation.mutate({ id: u.id, role: e.target.value as 'CUSTOMER' | 'ADMIN' })
+                      }
+                      className={`border rounded-lg px-2 py-1 text-xs font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                        u.role === 'ADMIN'
+                          ? 'border-amber-300 bg-amber-50 text-amber-700'
+                          : 'border-gray-200 text-gray-700'
+                      }`}
+                    >
+                      <option value="CUSTOMER">CUSTOMER</option>
+                      <option value="ADMIN">ADMIN</option>
+                    </select>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </main>
+    </div>
   );
 }
