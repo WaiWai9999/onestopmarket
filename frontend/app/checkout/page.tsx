@@ -130,7 +130,7 @@ export default function CheckoutPage() {
               onChange={(e) => setAddress(e.target.value)}
               rows={3}
               placeholder="Tokyo, Shibuya-ku 1-1-1"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <button

@@ -24,7 +24,7 @@ export default function ProductDetailPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [quantity, setQuantity] = useState(1);
-  const [added, setAdded] = useState(false);
+  const [cartError, setCartError] = useState('');
 
   const { data: product, isLoading } = useQuery<Product>({
     queryKey: ['product', id],
@@ -35,8 +35,13 @@ export default function ProductDetailPage() {
     mutationFn: () => api.post('/cart/items', { productId: id, quantity }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
+      router.push('/cart');
+    },
+    onError: (err: unknown) => {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+        ?? (err instanceof Error ? err.message : 'Failed to add to cart');
+      setCartError(msg);
     },
   });
 
@@ -45,6 +50,7 @@ export default function ProductDetailPage() {
       router.push('/login');
       return;
     }
+    setCartError('');
     addToCartMutation.mutate();
   };
 
@@ -91,12 +97,16 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {cartError && (
+            <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded">{cartError}</p>
+          )}
+
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0 || addToCartMutation.isPending}
             className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
           >
-            {added ? 'Added to Cart!' : addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
+            {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
           </button>
         </div>
       </div>

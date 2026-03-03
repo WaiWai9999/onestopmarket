@@ -35,6 +35,9 @@ export default function Navbar() {
               <Link href="/mypage/orders" className="text-gray-600 hover:text-blue-600">
                 Orders
               </Link>
+              <Link href="/mypage/profile" className="text-gray-600 hover:text-blue-600">
+                Profile
+              </Link>
               {isAdmin() && (
                 <Link href="/admin" className="text-gray-600 hover:text-blue-600">
                   Admin

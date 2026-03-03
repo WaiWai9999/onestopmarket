@@ -49,15 +49,22 @@ export default function AdminPage() {
           href="/admin/products"
           className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition"
         >
-          <h2 className="font-semibold text-lg mb-1">Product Management</h2>
+          <h2 className="font-semibold text-lg mb-1 text-gray-900">Product Management</h2>
           <p className="text-gray-500 text-sm">Add, edit and delete products</p>
         </Link>
         <Link
           href="/admin/orders"
           className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition"
         >
-          <h2 className="font-semibold text-lg mb-1">Order Management</h2>
+          <h2 className="font-semibold text-lg mb-1 text-gray-900">Order Management</h2>
           <p className="text-gray-500 text-sm">View and update order status</p>
+        </Link>
+        <Link
+          href="/admin/users"
+          className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition"
+        >
+          <h2 className="font-semibold text-lg mb-1 text-gray-900">User Management</h2>
+          <p className="text-gray-500 text-sm">View users and change roles</p>
         </Link>
       </div>
     </main>
