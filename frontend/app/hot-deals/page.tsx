@@ -1,71 +1,107 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import api from '@/lib/axios';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  discountPrice?: number;
+  discountPercent?: number;
+  isHotDeal: boolean;
+  dealExpiresAt?: string;
+  imageUrl?: string;
+  category: { id: string; name: string };
+}
+
+interface Deal {
+  id: string;
+  name: string;
+  originalPrice: number;
+  dealPrice: number;
+  discount: number;
+  image: string;
+  badge: string;
+  expiresIn: string;
+}
 
 export default function HotDealsPage() {
-  // Example deals - in production, this would come from your API
-  const deals = [
-    {
-      id: 1,
-      name: 'Premium Wireless Headphones',
-      originalPrice: 12000,
-      dealPrice: 7999,
-      discount: 33,
-      image: '🎧',
-      badge: 'Flash Sale',
-      expiresIn: '2 hours'
-    },
-    {
-      id: 2,
-      name: 'Smart Watch Pro',
-      originalPrice: 15000,
-      dealPrice: 9999,
-      discount: 33,
-      image: '⌚',
-      badge: 'Limited Stock',
-      expiresIn: '18 hours'
-    },
-    {
-      id: 3,
-      name: 'Portable Power Bank',
-      originalPrice: 5000,
-      dealPrice: 2999,
-      discount: 40,
-      image: '🔋',
-      badge: 'Best Seller',
-      expiresIn: '5 hours'
-    },
-    {
-      id: 4,
-      name: 'USB-C Cable Bundle (3pcs)',
-      originalPrice: 3000,
-      dealPrice: 1499,
-      discount: 50,
-      image: '🔌',
-      badge: 'Bundle Deal',
-      expiresIn: '24 hours'
-    },
-    {
-      id: 5,
-      name: 'Bluetooth Speaker',
-      originalPrice: 8000,
-      dealPrice: 4999,
-      discount: 37,
-      image: '🔊',
-      badge: 'Daily Deal',
-      expiresIn: '12 hours'
-    },
-    {
-      id: 6,
-      name: 'Screen Protector Pack (5pcs)',
-      originalPrice: 2500,
-      dealPrice: 999,
-      discount: 60,
-      image: '📱',
-      badge: 'Hot Pick',
-      expiresIn: '3 hours'
-    },
-  ];
+  const { data: products, isLoading, error } = useQuery<Product[]>({
+    queryKey: ['hot-deals'],
+    queryFn: () => api.get('/products/hot-deals').then((r) => r.data),
+  });
+
+  // Transform products into deals format
+  const deals: Deal[] = products?.map((product) => {
+    const originalPrice = product.price;
+    const dealPrice = product.discountPrice || product.price;
+    const discount = product.discountPercent || Math.round(((originalPrice - dealPrice) / originalPrice) * 100);
+
+    // Calculate expiry time
+    let expiresIn = 'No expiration';
+    if (product.dealExpiresAt) {
+      const expiryDate = new Date(product.dealExpiresAt);
+      const now = new Date();
+      const diffMs = expiryDate.getTime() - now.getTime();
+
+      if (diffMs > 0) {
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffDays > 0) {
+          expiresIn = `${diffDays} days`;
+        } else if (diffHours > 0) {
+          expiresIn = `${diffHours} hours`;
+        } else {
+          expiresIn = 'Less than 1 hour';
+        }
+      } else {
+        expiresIn = 'Expired';
+      }
+    }
+
+    // Determine badge based on discount
+    let badge = 'Deal';
+    if (discount >= 50) badge = 'Hot Pick';
+    else if (discount >= 40) badge = 'Best Deal';
+    else if (discount >= 30) badge = 'Flash Sale';
+    else if (discount >= 20) badge = 'Limited Time';
+
+    return {
+      id: product.id,
+      name: product.name,
+      originalPrice,
+      dealPrice,
+      discount,
+      image: product.imageUrl ? `https://via.placeholder.com/300x200?text=${encodeURIComponent(product.name)}` : '🎁',
+      badge,
+      expiresIn,
+    };
+  }) || [];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔥</div>
+          <p className="text-xl text-gray-600">Loading hot deals...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <p className="text-xl text-gray-600">Failed to load hot deals. Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
@@ -74,7 +110,7 @@ export default function HotDealsPage() {
         <div className="text-center mb-12">
           <div className="inline-block text-6xl mb-4">🔥</div>
           <h1 className="text-4xl font-bold text-gray-800 mb-3">Hot Deals</h1>
-          <p className="text-lg text-gray-600">Limited-time offers you don't want to miss!</p>
+          <p className="text-lg text-gray-600">Limited-time offers you don&apos;t want to miss!</p>
         </div>
 
         {/* Filter/Info Bar */}
@@ -85,7 +121,7 @@ export default function HotDealsPage() {
               <p className="text-sm text-gray-600">Prices update every hour - Check back for new deals!</p>
             </div>
             <div className="text-sm font-semibold text-orange-600">
-              Updated: Just now
+              Updated: {new Date().toLocaleTimeString()}
             </div>
           </div>
         </div>

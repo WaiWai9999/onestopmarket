@@ -41,13 +41,17 @@ model Category {
 
 // ─── Product ────────────────────────────────────────────
 model Product {
-  id          String    @id @default(uuid())
-  name        String
-  description String
-  price       Int       // store in yen (JPY) as integer
-  stock       Int       @default(0)
-  imageUrl    String?
-  categoryId  String
+  id                String     @id @default(uuid())
+  name              String
+  description       String
+  price             Int        // store in yen (JPY) as integer
+  discountPrice     Int?       // discounted price in yen (null if no discount)
+  discountPercent   Int?       // discount percentage (0-100)
+  isHotDeal         Boolean    @default(false) // mark as hot deal
+  dealExpiresAt     DateTime?  // when the deal expires
+  stock             Int        @default(0)
+  imageUrl          String?
+  categoryId        String
   deletedAt   DateTime? // soft delete
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

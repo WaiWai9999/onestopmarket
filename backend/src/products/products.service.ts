@@ -71,4 +71,27 @@ export class ProductsService {
       data: { deletedAt: new Date() },
     });
   }
+
+  async findHotDeals(limit: number = 6) {
+    const now = new Date();
+
+    const deals = await this.prisma.product.findMany({
+      where: {
+        deletedAt: null,
+        isHotDeal: true,
+        OR: [
+          { dealExpiresAt: null }, // deals without expiration
+          { dealExpiresAt: { gt: now } }, // deals that haven't expired
+        ],
+      },
+      include: { category: true },
+      orderBy: [
+        { dealExpiresAt: 'asc' }, // show expiring deals first
+        { createdAt: 'desc' }, // then by newest
+      ],
+      take: limit,
+    });
+
+    return deals;
+  }
 }

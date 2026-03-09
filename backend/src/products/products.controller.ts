@@ -27,6 +27,12 @@ export class ProductsController {
     return this.productsService.findAll(query);
   }
 
+  @Get('hot-deals')
+  findHotDeals(@Query('limit') limit?: string) {
+    const limitNum = limit ? parseInt(limit, 10) : 6;
+    return this.productsService.findHotDeals(limitNum);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
