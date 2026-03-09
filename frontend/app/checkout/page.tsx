@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -60,7 +60,7 @@ function CheckoutForm({ orderId }: { orderId: string }) {
 
 // Outer page — creates order and gets clientSecret
 export default function CheckoutPage() {
-  const { user } = useAuthStore();
+  const { user, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const [clientSecret, setClientSecret] = useState('');
   const [orderId, setOrderId] = useState('');
@@ -73,16 +73,21 @@ export default function CheckoutPage() {
     enabled: !!user,
   });
 
-  if (!user) {
-    return (
-      <main className="max-w-xl mx-auto px-6 py-16 text-center">
-        <p className="text-gray-500 mb-4">Please login to checkout.</p>
-        <button onClick={() => router.push('/login')} className="bg-blue-600 text-white px-6 py-2 rounded">
-          Login
-        </button>
-      </main>
-    );
-  }
+  const { data: profile } = useQuery<{ address: string | null }>({
+    queryKey: ['profile'],
+    queryFn: () => api.get('/users/me').then((r) => r.data),
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (profile?.address) setAddress(profile.address);
+  }, [profile]);
+
+  useEffect(() => {
+    if (_hasHydrated && !user) router.push('/login');
+  }, [_hasHydrated, user, router]);
+
+  if (!_hasHydrated || !user) return null;
 
   const handleProceedToPayment = async (e: React.FormEvent) => {
     e.preventDefault();

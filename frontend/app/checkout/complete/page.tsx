@@ -2,11 +2,17 @@
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 function CompleteContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['cart'] });
+  }, [queryClient]);
 
   return (
     <main className="max-w-xl mx-auto px-6 py-16 text-center">

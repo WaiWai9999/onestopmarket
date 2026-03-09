@@ -11,6 +11,7 @@ interface User {
 interface AuthStore {
   user: User | null;
   token: string | null;
+  _hasHydrated: boolean;
   setAuth: (user: User, token: string) => void;
   logout: () => void;
   isAdmin: () => boolean;
@@ -21,6 +22,7 @@ export const useAuthStore = create<AuthStore>()(
     (set, get) => ({
       user: null,
       token: null,
+      _hasHydrated: false,
       setAuth: (user, token) => {
         localStorage.setItem('token', token);
         set({ user, token });
@@ -31,6 +33,11 @@ export const useAuthStore = create<AuthStore>()(
       },
       isAdmin: () => get().user?.role === 'ADMIN',
     }),
-    { name: 'auth-storage' }
+    {
+      name: 'auth-storage',
+      onRehydrateStorage: () => (state) => {
+        if (state) state._hasHydrated = true;
+      },
+    }
   )
 );

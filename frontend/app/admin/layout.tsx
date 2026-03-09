@@ -7,22 +7,19 @@ import AdminSidebar from '@/components/layout/AdminSidebar';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, _hasHydrated } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
-    // Redirect non-admin users to home page
-    if (user === null) {
-      // User not logged in, redirect to login
-      router.push('/auth/login');
+    if (!_hasHydrated) return;
+    if (!user) {
+      router.push('/login');
     } else if (!isAdmin) {
-      // User is not admin, redirect to home
       router.push('/');
     }
-  }, [user, isAdmin, router]);
+  }, [user, isAdmin, _hasHydrated, router]);
 
-  // Don't render if not admin
-  if (!isAdmin) {
+  if (!_hasHydrated || !isAdmin) {
     return null;
   }
 

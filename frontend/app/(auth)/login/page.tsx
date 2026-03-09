@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/axios';
@@ -8,10 +8,23 @@ import { useAuthStore } from '@/store/auth.store';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setAuth } = useAuthStore();
+  const { setAuth, user, _hasHydrated } = useAuthStore();
+
+  useEffect(() => {
+    if (_hasHydrated && user) router.push('/products');
+  }, [_hasHydrated, user, router]);
+
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  useEffect(() => {
+    if (sessionStorage.getItem('session_expired')) {
+      setSessionExpired(true);
+      sessionStorage.removeItem('session_expired');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +45,12 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6">Login</h1>
+
+        {sessionExpired && (
+          <p className="bg-yellow-50 text-yellow-700 text-sm px-4 py-2 rounded mb-4 border border-yellow-200">
+            Your session has expired. Please login again.
+          </p>
+        )}
 
         {error && (
           <p className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded mb-4">{error}</p>

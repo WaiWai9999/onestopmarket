@@ -7,19 +7,16 @@ import AccountSidebar from '@/components/layout/AccountSidebar';
 
 export default function MypageLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    // Redirect if not logged in
-    if (user === null) {
-      router.push('/auth/login');
+    if (_hasHydrated && !user) {
+      router.push('/login');
     }
-  }, [user, router]);
+  }, [user, _hasHydrated, router]);
 
-  // Don't render if not logged in
-  if (!user) {
-    return null;
-  }
+  if (!_hasHydrated) return null;
+  if (!user) return null;
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 flex gap-8 items-start">

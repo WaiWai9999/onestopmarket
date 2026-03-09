@@ -1,12 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/axios';
+import { useAuthStore } from '@/store/auth.store';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, _hasHydrated } = useAuthStore();
+
+  useEffect(() => {
+    if (_hasHydrated && user) router.push('/products');
+  }, [_hasHydrated, user, router]);
   const [form, setForm] = useState({ email: '', password: '', name: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

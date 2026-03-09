@@ -9,7 +9,7 @@ import api from '@/lib/axios';
 import Logo from '@/components/Logo';
 
 export default function Navbar() {
-  const { user, logout, isAdmin } = useAuthStore();
+  const { user, logout, isAdmin, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const [accountOpen, setAccountOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -71,30 +71,28 @@ export default function Navbar() {
             >
               About
             </Link>
-            {user && (
-              <Link
-                href="/cart"
-                className="relative flex items-center gap-2 text-gray-600 hover:text-orange-500 text-sm font-semibold px-4 py-2 rounded-lg border border-transparent hover:bg-orange-50 transition-all duration-200"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="9" cy="21" r="1"></circle>
-                  <circle cx="20" cy="21" r="1"></circle>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                </svg>
-                Cart
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold leading-none shadow-lg">
-                    {cartCount > 99 ? '99+' : cartCount}
-                  </span>
-                )}
-              </Link>
-            )}
+            <Link
+              href="/cart"
+              className="relative flex items-center gap-2 text-gray-600 hover:text-orange-500 text-sm font-semibold px-4 py-2 rounded-lg border border-transparent hover:bg-orange-50 transition-all duration-200"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+              Cart
+              {_hasHydrated && user && cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold leading-none shadow-lg">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
 
         {/* Right Menu */}
         <div className="flex items-center gap-2">
-          {user ? (
+          {!_hasHydrated ? null : user ? (
             <>
               {/* Account dropdown */}
               <div className="relative" ref={dropdownRef}>
