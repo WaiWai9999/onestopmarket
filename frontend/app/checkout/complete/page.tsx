@@ -15,23 +15,29 @@ function CompleteContent() {
   }, [queryClient]);
 
   return (
-    <main className="max-w-xl mx-auto px-6 py-16 text-center">
-      <div className="text-6xl mb-6">✅</div>
-      <h1 className="text-2xl font-bold mb-2">Order Complete!</h1>
+    <main className="max-w-lg mx-auto px-6 py-20 text-center">
+      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Order confirmed!</h1>
       <p className="text-gray-500 mb-2">Thank you for your purchase.</p>
       {orderId && (
-        <p className="text-sm text-gray-400 mb-6">Order ID: {orderId}</p>
+        <p className="text-xs text-gray-400 font-mono bg-gray-100 rounded-lg px-3 py-1.5 inline-block mb-8">
+          Order ID: {orderId}
+        </p>
       )}
-      <div className="flex gap-4 justify-center">
+      <div className="flex gap-3 justify-center">
         <Link
           href="/mypage/orders"
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          className="bg-gray-900 hover:bg-gray-800 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
         >
           View Orders
         </Link>
         <Link
           href="/products"
-          className="border border-gray-300 px-6 py-2 rounded hover:border-blue-500"
+          className="border border-gray-200 hover:border-gray-400 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-colors"
         >
           Continue Shopping
         </Link>

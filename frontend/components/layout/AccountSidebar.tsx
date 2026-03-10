@@ -11,16 +11,16 @@ export default function AccountSidebar() {
   const isAdmin = user?.role === 'ADMIN';
 
   const accountLinks = [
-    { label: 'Profile Info', href: '/mypage/profile' },
-    { label: 'Change Password', href: '/mypage/password' },
-    { label: 'Orders', href: '/mypage/orders' },
+    { label: 'プロフィール', href: '/mypage/profile' },
+    { label: 'パスワード変更', href: '/mypage/password' },
+    ...(!isAdmin ? [{ label: '注文履歴', href: '/mypage/orders' }] : []),
   ];
 
   const adminLinks = [
-    { label: 'Dashboard', href: '/admin' },
-    { label: 'Product Management', href: '/admin/products' },
-    { label: 'Order Management', href: '/admin/orders' },
-    { label: 'User Management', href: '/admin/users' },
+    { label: 'ダッシュボード', href: '/admin' },
+    { label: '商品管理', href: '/admin/products' },
+    { label: '注文管理', href: '/admin/orders' },
+    { label: 'ユーザー管理', href: '/admin/users' },
   ];
 
   const handleLogout = () => {
@@ -29,16 +29,16 @@ export default function AccountSidebar() {
   };
 
   return (
-    <aside className="w-52 flex-shrink-0">
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden sticky top-20">
+    <aside className="w-48 flex-shrink-0">
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden sticky top-24">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-teal-500 px-4 py-3">
-          <p className="text-white font-semibold text-sm">Account</p>
-          {user && (
-            <div className="mt-1">
-              <p className="text-white text-xs truncate">{user.name || user.email}</p>
-              <p className="text-orange-100 text-xs">{isAdmin ? 'Admin' : 'Customer'}</p>
-            </div>
+        <div className="bg-[#1a6b1f] text-white p-6 px-4 py-4">
+          <p className="text-white font-semibold text-sm truncate">{user?.name ?? 'アカウント'}</p>
+          <p className="text-gray-400 text-xs mt-0.5 truncate">{user?.email}</p>
+          {isAdmin && (
+            <span className="inline-block mt-1.5 text-xs font-semibold text-white bg-white/20 px-2 py-0.5 rounded-full">
+              管理者
+            </span>
           )}
         </div>
 
@@ -48,28 +48,28 @@ export default function AccountSidebar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 pathname === link.href
-                  ? 'bg-orange-100 text-orange-700'
-                  : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
+                  ? 'bg-[#1a6b1f] text-white'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
               {link.label}
             </Link>
           ))}
 
-          {/* Admin Links - Only show if user is admin */}
           {isAdmin && (
             <>
-              <div className="border-t border-gray-200 my-2" />
+              <div className="border-t border-gray-100 my-2" />
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-1">管理者メニュー</p>
               {adminLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                     pathname === link.href
-                      ? 'bg-teal-100 text-teal-700'
-                      : 'text-gray-600 hover:bg-teal-50 hover:text-teal-600'
+                      ? 'bg-[#1a6b1f] text-white'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   }`}
                 >
                   {link.label}
@@ -81,9 +81,9 @@ export default function AccountSidebar() {
           <div className="border-t border-gray-100 mt-2 pt-2">
             <button
               onClick={handleLogout}
-              className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all"
+              className="w-full text-left px-3 py-2 rounded-xl text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors"
             >
-              Logout
+              ログアウト
             </button>
           </div>
         </nav>

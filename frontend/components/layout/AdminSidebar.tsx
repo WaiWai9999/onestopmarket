@@ -5,10 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 
 const navLinks = [
-  { label: 'Dashboard', href: '/admin' },
-  { label: 'Products', href: '/admin/products' },
-  { label: 'Orders', href: '/admin/orders' },
-  { label: 'Users', href: '/admin/users' },
+  { label: 'ダッシュボード', href: '/admin' },
+  { label: 'カテゴリ管理', href: '/admin/categories' },
+  { label: '商品管理', href: '/admin/products' },
+  { label: '注文管理', href: '/admin/orders' },
+  { label: 'ユーザー管理', href: '/admin/users' },
 ];
 
 export default function AdminSidebar() {
@@ -24,8 +25,8 @@ export default function AdminSidebar() {
   return (
     <aside className="w-52 flex-shrink-0">
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden sticky top-20">
-        <div className="bg-gradient-to-r from-orange-500 to-teal-500 px-4 py-3">
-          <p className="text-white font-semibold text-sm">Admin Panel</p>
+        <div className="bg-[#1a6b1f] px-4 py-3">
+          <p className="text-white font-semibold text-sm">管理パネル</p>
         </div>
 
         <nav className="p-2">
@@ -35,8 +36,8 @@ export default function AdminSidebar() {
               href={link.href}
               className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 pathname === link.href
-                  ? 'bg-orange-100 text-orange-700'
-                  : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
+                  ? 'bg-[#1a6b1f]/10 text-[#1a6b1f]'
+                  : 'text-gray-600 hover:bg-[#1a6b1f]/5 hover:text-[#1a6b1f]'
               }`}
             >
               {link.label}
@@ -46,15 +47,15 @@ export default function AdminSidebar() {
           <div className="border-t border-gray-100 mt-2 pt-2">
             <Link
               href="/"
-              className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-teal-600 transition-all"
+              className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-[#1a6b1f] transition-all"
             >
-              ← Back to Store
+              ← ストアに戻る
             </Link>
             <button
               onClick={handleLogout}
               className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-all"
             >
-              Logout
+              ログアウト
             </button>
           </div>
         </nav>

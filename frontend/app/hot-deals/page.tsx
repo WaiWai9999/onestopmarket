@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import Image from 'next/image';
 import api from '@/lib/axios';
 
 interface Product {
@@ -14,17 +15,25 @@ interface Product {
   dealExpiresAt?: string;
   imageUrl?: string;
   category: { id: string; name: string };
+  description?: string;
 }
 
-interface Deal {
-  id: string;
-  name: string;
-  originalPrice: number;
-  dealPrice: number;
-  discount: number;
-  image: string;
-  badge: string;
-  expiresIn: string;
+function getExpiresIn(dealExpiresAt?: string): string {
+  if (!dealExpiresAt) return '期限なし';
+  const diff = new Date(dealExpiresAt).getTime() - Date.now();
+  if (diff <= 0) return '終了';
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(hours / 24);
+  if (days > 0) return `残り${days}日`;
+  if (hours > 0) return `残り${hours}時間`;
+  return '残り1時間未満';
+}
+
+function getBadge(discount: number): string {
+  if (discount >= 50) return '注目商品';
+  if (discount >= 40) return '超お得';
+  if (discount >= 30) return 'タイムセール';
+  return '期間限定';
 }
 
 export default function HotDealsPage() {
@@ -33,185 +42,124 @@ export default function HotDealsPage() {
     queryFn: () => api.get('/products/hot-deals').then((r) => r.data),
   });
 
-  // Transform products into deals format
-  const deals: Deal[] = products?.map((product) => {
-    const originalPrice = product.price;
-    const dealPrice = product.discountPrice || product.price;
-    const discount = product.discountPercent || Math.round(((originalPrice - dealPrice) / originalPrice) * 100);
-
-    // Calculate expiry time
-    let expiresIn = 'No expiration';
-    if (product.dealExpiresAt) {
-      const expiryDate = new Date(product.dealExpiresAt);
-      const now = new Date();
-      const diffMs = expiryDate.getTime() - now.getTime();
-
-      if (diffMs > 0) {
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffHours / 24);
-
-        if (diffDays > 0) {
-          expiresIn = `${diffDays} days`;
-        } else if (diffHours > 0) {
-          expiresIn = `${diffHours} hours`;
-        } else {
-          expiresIn = 'Less than 1 hour';
-        }
-      } else {
-        expiresIn = 'Expired';
-      }
-    }
-
-    // Determine badge based on discount
-    let badge = 'Deal';
-    if (discount >= 50) badge = 'Hot Pick';
-    else if (discount >= 40) badge = 'Best Deal';
-    else if (discount >= 30) badge = 'Flash Sale';
-    else if (discount >= 20) badge = 'Limited Time';
-
-    return {
-      id: product.id,
-      name: product.name,
-      originalPrice,
-      dealPrice,
-      discount,
-      image: product.imageUrl ? `https://via.placeholder.com/300x200?text=${encodeURIComponent(product.name)}` : '🎁',
-      badge,
-      expiresIn,
-    };
-  }) || [];
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🔥</div>
-          <p className="text-xl text-gray-600">Loading hot deals...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">⚠️</div>
-          <p className="text-xl text-gray-600">Failed to load hot deals. Please try again later.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
-      {/* Header */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="text-center mb-12">
-          <div className="inline-block text-6xl mb-4">🔥</div>
-          <h1 className="text-4xl font-bold text-gray-800 mb-3">Hot Deals</h1>
-          <p className="text-lg text-gray-600">Limited-time offers you don&apos;t want to miss!</p>
-        </div>
-
-        {/* Filter/Info Bar */}
-        <div className="bg-gradient-to-r from-orange-100 to-red-100 rounded-xl p-6 mb-12 border border-orange-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-gray-800">⏰ Flash Sale Alert</p>
-              <p className="text-sm text-gray-600">Prices update every hour - Check back for new deals!</p>
-            </div>
-            <div className="text-sm font-semibold text-orange-600">
-              Updated: {new Date().toLocaleTimeString()}
-            </div>
-          </div>
-        </div>
-
-        {/* Deals Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {deals.map((deal) => (
-            <Link key={deal.id} href={`/products/${deal.id}`}>
-              <div className="bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer h-full border border-gray-200 hover:border-orange-300">
-                {/* Product Image Area */}
-                <div className="bg-gradient-to-br from-orange-100 to-orange-50 h-48 flex items-center justify-center relative overflow-hidden">
-                  <div className="text-6xl">{deal.image}</div>
-                  
-                  {/* Discount Badge */}
-                  <div className="absolute top-4 right-4 bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full font-bold text-sm">
-                    -{deal.discount}%
-                  </div>
-
-                  {/* Deal Type Badge */}
-                  <div className="absolute top-4 left-4 bg-white text-orange-600 px-3 py-1 rounded-full font-semibold text-xs">
-                    {deal.badge}
-                  </div>
-                </div>
-
-                {/* Product Info */}
-                <div className="p-6">
-                  <h3 className="font-bold text-gray-800 mb-3 text-lg line-clamp-2">{deal.name}</h3>
-
-                  {/* Price */}
-                  <div className="mb-4">
-                    <div className="flex items-baseline gap-3 mb-2">
-                      <p className="text-3xl font-bold text-orange-600">¥{deal.dealPrice.toLocaleString()}</p>
-                      <p className="text-sm text-gray-500 line-through">¥{deal.originalPrice.toLocaleString()}</p>
-                    </div>
-                    <p className="text-xs text-red-600 font-semibold">You save ¥{(deal.originalPrice - deal.dealPrice).toLocaleString()}</p>
-                  </div>
-
-                  {/* Expiry */}
-                  <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center mb-4">
-                    <p className="text-xs font-semibold text-red-600">⏳ Expires in {deal.expiresIn}</p>
-                  </div>
-
-                  {/* CTA Button */}
-                  <button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-3 rounded-lg hover:shadow-lg transition-all duration-200">
-                    View Deal →
-                  </button>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Why Shop Hot Deals */}
-        <div className="bg-white rounded-xl border border-gray-200 p-12 mb-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Why Shop Hot Deals?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-4xl mb-4">💰</div>
-              <p className="font-semibold text-gray-800 mb-2">Save Big</p>
-              <p className="text-gray-600">Up to 60% off on selected products</p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-4">⚡</div>
-              <p className="font-semibold text-gray-800 mb-2">Limited Stock</p>
-              <p className="text-gray-600">Pre-order or buy while supplies last</p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-4">🎁</div>
-              <p className="font-semibold text-gray-800 mb-2">Exclusive Offers</p>
-              <p className="text-gray-600">Premium deals available only here</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Newsletter CTA */}
-        <div className="bg-gradient-to-r from-orange-500 to-teal-500 rounded-xl p-8 text-center text-white">
-          <h3 className="text-2xl font-bold mb-3">Never Miss a Deal!</h3>
-          <p className="mb-6">Subscribe to get notifications about new hot deals</p>
-          <div className="flex gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300"
-            />
-            <button className="bg-white text-orange-600 px-6 py-3 rounded-lg font-bold hover:shadow-lg transition-all duration-200">
-              Subscribe
-            </button>
-          </div>
+    <>
+      {/* Dark hero header */}
+      <div className="bg-[#1a6b1f] text-white p-6 text-white px-6 py-12">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-2">期間限定</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-3">🔥 お得なセール</h1>
+          <p className="text-white/70 text-sm max-w-md">
+            厳選されたお得な商品を定期的に更新。売り切れる前にお早めに。
+          </p>
         </div>
       </div>
-    </div>
+
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-gray-100 rounded-2xl h-72 animate-pulse" />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="text-gray-400 text-4xl mb-3">⚠️</p>
+            <p className="text-gray-500 font-medium">セール情報の読み込みに失敗しました</p>
+          </div>
+        ) : !products || products.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-400 text-4xl mb-3">🔥</p>
+            <p className="text-gray-500 font-medium">現在セール中の商品はありません</p>
+            <p className="text-gray-400 text-sm mt-1">新しいオファーをお楽しみに。</p>
+            <Link href="/products" className="mt-6 inline-block bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+              すべての商品を見る
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mb-14">
+              {products.map((product) => {
+                const dealPrice = product.discountPrice ?? product.price;
+                const discount = product.discountPercent ?? Math.round(((product.price - dealPrice) / product.price) * 100);
+                const expiresIn = getExpiresIn(product.dealExpiresAt);
+                const badge = getBadge(discount);
+
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/products/${product.id}`}
+                    className="group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#1a6b1f] transition-all flex flex-col"
+                  >
+                    {/* Image */}
+                    <div className="h-48 bg-gray-100 relative overflow-hidden flex-shrink-0">
+                      {product.imageUrl ? (
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-gray-400 text-xs">No Image</div>
+                      )}
+                      {discount > 0 && (
+                        <span className="absolute top-2.5 right-2.5 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                          -{discount}%
+                        </span>
+                      )}
+                      <span className="absolute top-2.5 left-2.5 bg-white/90 border border-gray-200 text-gray-600 text-xs font-semibold px-2 py-0.5 rounded-full">
+                        {badge}
+                      </span>
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-4 flex flex-col gap-1.5 flex-1">
+                      <p className="text-xs text-[#1a6b1f] font-medium">{product.category.name}</p>
+                      <h2 className="font-bold text-gray-900 text-sm leading-snug">{product.name}</h2>
+
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <p className="text-[#1a6b1f] font-bold text-sm">¥{dealPrice.toLocaleString()}</p>
+                        {dealPrice < product.price && (
+                          <p className="text-gray-400 text-xs line-through">¥{product.price.toLocaleString()}</p>
+                        )}
+                      </div>
+
+                      {dealPrice < product.price && (
+                        <p className="text-xs text-green-600 font-medium">
+                          ¥{(product.price - dealPrice).toLocaleString()} お得
+                        </p>
+                      )}
+
+                      <div className="mt-auto pt-3 flex items-center justify-between">
+                        <span className="text-xs text-gray-400">⏳ {expiresIn}</span>
+                        <span className="text-xs font-semibold text-white bg-[#1a6b1f] px-3 py-1 rounded-full">
+                          詳細を見る
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Value props */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-gray-200 pt-10">
+              {[
+                { icon: '💰', title: '大幅割引', desc: '対象商品が最大60%オフ。' },
+                { icon: '⚡', title: '数量限定', desc: '在庫がなくなり次第終了。' },
+                { icon: '🎁', title: '限定オファー', desc: 'ここだけのプレミアムな特別価格。' },
+              ].map((v) => (
+                <div key={v.title} className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col gap-2 hover:shadow-md hover:border-[#1a6b1f] transition-all">
+                  <span className="text-2xl">{v.icon}</span>
+                  <h3 className="font-bold text-gray-900">{v.title}</h3>
+                  <p className="text-gray-500 text-sm">{v.desc}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }

@@ -31,7 +31,6 @@ export default function Navbar() {
     router.push('/');
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -43,202 +42,146 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-orange-100 shadow-sm">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Logo + Primary Menu */}
+    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+
+        {/* Left: Logo + Primary Nav */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex-shrink-0 hover:opacity-80 transition-opacity">
             <Logo size="sm" />
           </Link>
 
-          {/* Primary Navigation */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1">
             <Link
               href="/products"
-              className="text-gray-600 hover:text-orange-500 text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200"
+              className="text-gray-600 hover:text-orange-500 text-sm font-medium px-3 py-2 rounded-md transition-colors"
             >
-              Products
+              商品一覧
             </Link>
             <Link
               href="/hot-deals"
-              className="text-gray-600 hover:text-orange-500 text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-1"
+              className="text-gray-600 hover:text-orange-500 text-sm font-medium px-3 py-2 rounded-md transition-colors flex items-center gap-1"
             >
-              🔥 Hot Deals
+              <span className="text-orange-500">🔥</span> セール
             </Link>
             <Link
               href="/about"
-              className="text-gray-600 hover:text-orange-500 text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200"
+              className="text-gray-600 hover:text-orange-500 text-sm font-medium px-3 py-2 rounded-md transition-colors"
             >
               About
-            </Link>
-            <Link
-              href="/cart"
-              className="relative flex items-center gap-2 text-gray-600 hover:text-orange-500 text-sm font-semibold px-4 py-2 rounded-lg border border-transparent hover:bg-orange-50 transition-all duration-200"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
-              Cart
-              {_hasHydrated && user && cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold leading-none shadow-lg">
-                  {cartCount > 99 ? '99+' : cartCount}
-                </span>
-              )}
             </Link>
           </div>
         </div>
 
-        {/* Right Menu */}
-        <div className="flex items-center gap-2">
-          {!_hasHydrated ? null : user ? (
-            <>
-              {/* Account dropdown */}
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setAccountOpen((o) => !o)}
-                  className="flex items-center gap-2 text-gray-600 hover:text-orange-500 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-orange-50 transition-all duration-200"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                  Account
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-300 ${accountOpen ? 'rotate-180' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+        {/* Right: Cart + Auth */}
+        <div className="flex items-center gap-3">
+          {/* Cart button — always visible, prominent */}
+          <Link
+            href="/cart"
+            className="relative flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            カート
+            {_hasHydrated && user && cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold leading-none shadow">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </Link>
 
-                {accountOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 backdrop-blur-sm">
-                    <p className="px-4 py-3 text-xs text-gray-500 border-b border-gray-100 font-semibold uppercase tracking-wide truncate">
-                      {user.email}
-                    </p>
-                    <Link
-                      href="/mypage/profile"
-                      onClick={() => setAccountOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gradient-to-r hover:from-orange-50 hover:to-teal-50 hover:text-orange-600 transition-all duration-200"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                      </svg>
-                      Profile Info
-                    </Link>
-                    <Link
-                      href="/mypage/password"
-                      onClick={() => setAccountOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gradient-to-r hover:from-orange-50 hover:to-teal-50 hover:text-orange-600 transition-all duration-200"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                      </svg>
-                      Change Password
-                    </Link>
-                    <Link
-                      href="/mypage/orders"
-                      onClick={() => setAccountOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gradient-to-r hover:from-orange-50 hover:to-teal-50 hover:text-orange-600 transition-all duration-200"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="9" cy="21" r="1"></circle>
-                        <circle cx="20" cy="21" r="1"></circle>
+          {/* Auth state */}
+          {!_hasHydrated ? null : user ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setAccountOpen((o) => !o)}
+                className="flex items-center gap-2 text-gray-700 hover:text-orange-500 text-sm font-medium px-3 py-2 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span className="hidden sm:inline max-w-[100px] truncate">{user.name ?? 'アカウント'}</span>
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${accountOpen ? 'rotate-180' : ''}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {accountOpen && (
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
+                  <p className="px-4 py-2.5 text-xs text-gray-400 border-b border-gray-100 truncate">{user.email}</p>
+
+                  <Link href="/mypage/profile" onClick={() => setAccountOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    プロフィール
+                  </Link>
+                  {!isAdmin() && (
+                    <Link href="/mypage/orders" onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                       </svg>
-                      Orders
+                      注文履歴
                     </Link>
+                  )}
+                  <Link href="/mypage/password" onClick={() => setAccountOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    パスワード変更
+                  </Link>
 
-                    {/* Admin Section - Only show if user is admin */}
-                    {isAdmin() && (
-                      <>
-                        <div className="border-t border-gray-100 my-2" />
-                        <Link
-                          href="/admin"
-                          onClick={() => setAccountOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 hover:text-teal-700 transition-all duration-200"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 3v1m6.053 1.053l-.707.707M21 12h1m-1 6.053l-.707-.707M12 21v1m-6.053-1.053l.707.707M3 12H2m1-6.053l.707.707"></path>
-                            <circle cx="12" cy="12" r="5"></circle>
-                          </svg>
-                          Dashboard
-                        </Link>
-                        <Link
-                          href="/admin/products"
-                          onClick={() => setAccountOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 hover:text-teal-700 transition-all duration-200"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M6 2h12a1 1 0 0 1 1 1v2h1a1 1 0 0 1 1 1v2H1V6a1 1 0 0 1 1-1h1V3a1 1 0 0 1 1-1z"></path>
-                            <path d="M1 10h22v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-8z"></path>
-                          </svg>
-                          Product Management
-                        </Link>
-                        <Link
-                          href="/admin/orders"
-                          onClick={() => setAccountOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 hover:text-teal-700 transition-all duration-200"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 11l3 3L22 4"></path>
-                            <path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11"></path>
-                          </svg>
-                          Order Management
-                        </Link>
-                        <Link
-                          href="/admin/users"
-                          onClick={() => setAccountOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 hover:text-teal-700 transition-all duration-200"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                          </svg>
-                          User Management
-                        </Link>
-                      </>
-                    )}
-
-                    <div className="border-t border-gray-100 mt-2 pt-2">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-200 rounded-lg"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                          <polyline points="16 17 21 12 16 7"></polyline>
-                          <line x1="21" y1="12" x2="9" y2="12"></line>
+                  {isAdmin() && (
+                    <>
+                      <div className="border-t border-gray-100 my-1" />
+                      <Link href="/admin" onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-teal-700 hover:bg-teal-50 transition-colors">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect>
+                          <rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>
                         </svg>
-                        Logout
-                      </button>
-                    </div>
+                        管理画面
+                      </Link>
+                    </>
+                  )}
+
+                  <div className="border-t border-gray-100 mt-1">
+                    <button onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
+                      </svg>
+                      ログアウト
+                    </button>
                   </div>
-                )}
-              </div>
-            </>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link
                 href="/login"
-                className="text-gray-600 hover:text-orange-500 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-orange-50 transition-all duration-200"
+                className="text-gray-600 hover:text-orange-500 text-sm font-medium px-3 py-2 rounded-md transition-colors"
               >
-                Login
+                ログイン
               </Link>
               <Link
                 href="/register"
-                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold px-6 py-2 rounded-lg hover:shadow-lg hover:shadow-orange-200 transition-all duration-200 transform hover:scale-105"
+                className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-5 py-2 rounded-full transition-colors shadow-sm"
               >
-                Register
+                新規登録
               </Link>
             </>
           )}

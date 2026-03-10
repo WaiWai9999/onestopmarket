@@ -2,12 +2,12 @@
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a6b1f]/5 via-white to-[#1a6b1f]/10">
       {/* Header */}
-      <div className="max-w-6xl mx-auto px-6 py-20 text-center">
-        <h1 className="text-5xl font-bold text-gray-800 mb-4">About OneStopMarket</h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Your ultimate destination for shopping convenience and quality products
+      <div className="bg-[#1a6b1f] text-white px-6 py-20 text-center">
+        <h1 className="text-5xl font-bold mb-4">OneStopMarketについて</h1>
+        <p className="text-xl text-white/80 max-w-2xl mx-auto">
+          便利で快適なショッピング体験を、すべての方に
         </p>
       </div>
 
@@ -15,23 +15,22 @@ export default function AboutPage() {
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-20">
           <div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Our Mission</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">私たちのミッション</h2>
             <p className="text-gray-600 text-lg leading-relaxed mb-4">
-              At OneStopMarket, we believe shopping should be simple, enjoyable, and accessible to everyone. 
-              Our mission is to provide a seamless online shopping experience with a carefully curated selection 
-              of quality products at competitive prices.
+              OneStopMarketは、ショッピングはシンプルで楽しく、誰もが利用しやすいものであるべきだと考えています。
+              厳選された高品質な商品を手頃な価格で提供し、シームレスなオンラインショッピング体験をお届けすることが
+              私たちの使命です。
             </p>
             <p className="text-gray-600 text-lg leading-relaxed">
-              We're committed to delivering excellence in every aspect of our service, from product quality 
-              to customer support.
+              商品の品質からカスタマーサポートまで、あらゆる面で卓越したサービスを提供することに全力を尽くしています。
             </p>
           </div>
-          <div className="bg-gradient-to-br from-orange-400 to-teal-400 rounded-2xl h-96 shadow-xl flex items-center justify-center">
+          <div className="bg-gradient-to-br from-[#1a6b1f] to-[#2d8f33] rounded-2xl h-96 shadow-xl flex items-center justify-center">
             <div className="text-center text-white">
               <svg className="w-24 h-24 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              <p className="text-lg font-semibold">Innovation First</p>
+              <p className="text-lg font-semibold">イノベーション第一</p>
             </div>
           </div>
         </div>
@@ -39,41 +38,41 @@ export default function AboutPage() {
 
       {/* Values Section */}
       <div className="max-w-6xl mx-auto px-6 py-12 mb-20">
-        <h2 className="text-3xl font-bold text-gray-800 mb-12 text-center">Our Values</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-12 text-center">私たちの価値観</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             {
-              title: 'Quality',
-              desc: 'We source only the best products from trusted suppliers to ensure customer satisfaction.',
+              title: '品質へのこだわり',
+              desc: '信頼できる仕入先から最高の商品のみを厳選し、お客様にご満足いただける品質をお約束します。',
               icon: '⭐'
             },
             {
-              title: 'Trust',
-              desc: 'Transparency and honesty are at the core of everything we do for our customers.',
+              title: '信頼と誠実さ',
+              desc: '透明性と誠実さをすべての活動の基盤とし、お客様との信頼関係を大切にしています。',
               icon: '🤝'
             },
             {
-              title: 'Innovation',
-              desc: 'We continuously improve our platform to provide the best shopping experience.',
+              title: 'イノベーション',
+              desc: '最高のショッピング体験を提供するために、プラットフォームの継続的な改善に取り組んでいます。',
               icon: '💡'
             },
             {
-              title: 'Customer First',
-              desc: 'Your satisfaction is our top priority, and we\'re here to help 24/7.',
+              title: 'お客様第一',
+              desc: 'お客様の満足を最優先に、24時間365日のサポート体制でお応えします。',
               icon: '❤️'
             },
             {
-              title: 'Sustainability',
-              desc: 'We care about the environment and promote eco-friendly shopping practices.',
+              title: 'サステナビリティ',
+              desc: '環境に配慮し、エコフレンドリーなショッピングの推進に努めています。',
               icon: '🌍'
             },
             {
-              title: 'Community',
-              desc: 'We believe in building a strong community of satisfied and loyal customers.',
+              title: 'コミュニティ',
+              desc: '満足度の高い、ロイヤルなお客様のコミュニティづくりを目指しています。',
               icon: '👥'
             }
           ].map((value) => (
-            <div key={value.title} className="bg-white rounded-2xl p-8 border border-orange-100 hover:border-orange-300 hover:shadow-lg transition-all duration-300">
+            <div key={value.title} className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-[#1a6b1f] hover:shadow-lg transition-all duration-300">
               <div className="text-4xl mb-4">{value.icon}</div>
               <h3 className="text-xl font-bold text-gray-800 mb-3">{value.title}</h3>
               <p className="text-gray-600 leading-relaxed">{value.desc}</p>
@@ -83,18 +82,18 @@ export default function AboutPage() {
       </div>
 
       {/* Stats Section */}
-      <div className="bg-gradient-to-r from-orange-500 to-teal-500 py-16 mb-20">
+      <div className="bg-[#1a6b1f] py-16 mb-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center text-white">
             {[
-              { label: 'Happy Customers', value: '50K+' },
-              { label: 'Products', value: '5K+' },
-              { label: 'Years of Service', value: '5+' },
-              { label: 'Daily Transactions', value: '1K+' }
+              { label: 'お客様の笑顔', value: '50K+' },
+              { label: '取扱商品数', value: '5K+' },
+              { label: 'サービス提供年数', value: '5+' },
+              { label: '1日あたりの取引件数', value: '1K+' }
             ].map((stat) => (
               <div key={stat.label}>
                 <p className="text-4xl font-bold mb-2">{stat.value}</p>
-                <p className="text-lg opacity-90">{stat.label}</p>
+                <p className="text-lg text-white/80">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -104,24 +103,24 @@ export default function AboutPage() {
       {/* Contact Section */}
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Get In Touch</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">お問い合わせ</h2>
           <p className="text-gray-600 text-lg mb-8">
-            We'd love to hear from you. Have any questions? We're here to help.
+            ご質問やご相談がございましたら、お気軽にお問い合わせください。
           </p>
           <div className="flex flex-col md:flex-row justify-center gap-6">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Email</p>
-              <p className="text-lg font-semibold text-orange-600">support@onestopmarket.com</p>
+              <p className="text-sm text-gray-500 mb-1">メール</p>
+              <p className="text-lg font-semibold text-[#1a6b1f]">support@onestopmarket.com</p>
             </div>
             <div className="hidden md:block border-l border-gray-300"></div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Phone</p>
-              <p className="text-lg font-semibold text-orange-600">+81-3-XXXX-XXXX</p>
+              <p className="text-sm text-gray-500 mb-1">電話</p>
+              <p className="text-lg font-semibold text-[#1a6b1f]">+81-3-XXXX-XXXX</p>
             </div>
             <div className="hidden md:block border-l border-gray-300"></div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Hours</p>
-              <p className="text-lg font-semibold text-orange-600">24/7 Support</p>
+              <p className="text-sm text-gray-500 mb-1">営業時間</p>
+              <p className="text-lg font-semibold text-[#1a6b1f]">24時間対応</p>
             </div>
           </div>
         </div>

@@ -15,7 +15,6 @@ interface Cart {
   total: number;
 }
 
-// Inner form — uses Stripe hooks
 function CheckoutForm({ orderId }: { orderId: string }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -23,10 +22,9 @@ function CheckoutForm({ orderId }: { orderId: string }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!stripe || !elements) return;
-
     setLoading(true);
     setError('');
 
@@ -44,13 +42,15 @@ function CheckoutForm({ orderId }: { orderId: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <PaymentElement />
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && (
+        <p className="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-xl border border-red-100">{error}</p>
+      )}
       <button
         type="submit"
         disabled={!stripe || loading}
-        className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-lg hover:shadow-lg disabled:opacity-50 transition-all"
+        className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50"
       >
         {loading ? 'Processing...' : 'Pay Now'}
       </button>
@@ -58,7 +58,6 @@ function CheckoutForm({ orderId }: { orderId: string }) {
   );
 }
 
-// Outer page — creates order and gets clientSecret
 export default function CheckoutPage() {
   const { user, _hasHydrated } = useAuthStore();
   const router = useRouter();
@@ -89,7 +88,7 @@ export default function CheckoutPage() {
 
   if (!_hasHydrated || !user) return null;
 
-  const handleProceedToPayment = async (e: React.FormEvent) => {
+  const handleProceedToPayment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const { data } = await api.post('/orders/checkout', { shippingAddress: address });
@@ -102,72 +101,89 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div className="md:col-span-2">
-        <h1 className="text-2xl font-bold mb-6">Checkout</h1>
-
-        {/* Step 1 — Shipping Address */}
-        {step === 'address' && (
-          <form onSubmit={handleProceedToPayment} className="space-y-4 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Address</label>
-              <textarea
-                required
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                rows={4}
-                placeholder="Tokyo, Shibuya-ku 1-1-1"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-lg hover:shadow-lg transition-all"
-            >
-              Continue to Payment
-            </button>
-          </form>
-        )}
-
-        {/* Step 2 — Stripe Payment */}
-        {step === 'payment' && clientSecret && (
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-            <Elements stripe={stripePromise} options={{ clientSecret }}>
-              <CheckoutForm orderId={orderId} />
-            </Elements>
-          </div>
-        )}
-
-        {/* Test card hint */}
-        {step === 'payment' && (
-          <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
-            <p className="font-semibold">Test card:</p>
-            <p>Card number: 4242 4242 4242 4242</p>
-            <p>Expiry: any future date · CVC: any 3 digits</p>
-          </div>
-        )}
+    <main className="max-w-5xl mx-auto px-6 py-8">
+      {/* Step indicator */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className={`flex items-center gap-2 text-sm font-semibold ${step === 'address' ? 'text-gray-900' : 'text-gray-400'}`}>
+          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 'address' ? 'bg-gray-900 text-white' : 'bg-green-500 text-white'}`}>
+            {step === 'payment' ? '✓' : '1'}
+          </span>
+          Shipping
+        </div>
+        <div className="flex-1 h-px bg-gray-200 max-w-8" />
+        <div className={`flex items-center gap-2 text-sm font-semibold ${step === 'payment' ? 'text-gray-900' : 'text-gray-400'}`}>
+          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 'payment' ? 'bg-gray-900 text-white' : 'bg-gray-200 text-gray-400'}`}>
+            2
+          </span>
+          Payment
+        </div>
       </div>
 
-      {/* Order Summary (right column) */}
-      <aside className="md:col-span-1">
-        {cart ? (
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 sticky top-24">
-            <h2 className="font-semibold mb-3">Order Summary</h2>
-            {cart.items.map((item) => (
-              <div key={item.id} className="flex justify-between text-sm py-1">
-                <span className="text-gray-700">{item.product.name} × {item.quantity}</span>
-                <span className="text-gray-700">¥{(item.product.price * item.quantity).toLocaleString()}</span>
-              </div>
-            ))}
-            <div className="border-t mt-3 pt-3 flex justify-between font-bold text-gray-800">
-              <span>Total</span>
-              <span>¥{cart.total.toLocaleString()}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        {/* Main form */}
+        <div className="lg:col-span-2">
+          {step === 'address' && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h2 className="font-bold text-gray-900 mb-5">Shipping Address</h2>
+              <form onSubmit={handleProceedToPayment} className="space-y-4">
+                <textarea
+                  required
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  rows={4}
+                  placeholder="Tokyo, Shibuya-ku 1-1-1"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none"
+                />
+                <button
+                  type="submit"
+                  className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 rounded-xl transition-colors"
+                >
+                  Continue to Payment
+                </button>
+              </form>
             </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">No items in cart</div>
-        )}
-      </aside>
+          )}
+
+          {step === 'payment' && clientSecret && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h2 className="font-bold text-gray-900 mb-5">Payment</h2>
+              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <CheckoutForm orderId={orderId} />
+              </Elements>
+            </div>
+          )}
+
+          {step === 'payment' && (
+            <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-500">
+              <p className="font-semibold text-gray-700 mb-1">Test card</p>
+              <p className="font-mono text-xs">4242 4242 4242 4242 · Any future date · Any CVC</p>
+            </div>
+          )}
+        </div>
+
+        {/* Order Summary */}
+        <aside className="bg-white border border-gray-200 rounded-2xl p-6 sticky top-24">
+          <h2 className="font-bold text-gray-900 mb-4">Order Summary</h2>
+          {cart ? (
+            <>
+              <div className="space-y-2 mb-4">
+                {cart.items.map((item) => (
+                  <div key={item.id} className="flex justify-between text-sm text-gray-600">
+                    <span className="truncate max-w-[130px]">{item.product.name} ×{item.quantity}</span>
+                    <span className="flex-shrink-0 ml-2">¥{(item.product.price * item.quantity).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-gray-900">
+                <span>Total</span>
+                <span>¥{cart.total.toLocaleString()}</span>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-gray-400">No items in cart</p>
+          )}
+        </aside>
+      </div>
     </main>
   );
 }

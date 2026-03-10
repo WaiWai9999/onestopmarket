@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import api from '@/lib/axios';
 import { useAuthStore } from '@/store/auth.store';
@@ -46,96 +47,130 @@ export default function CartPage() {
 
   if (!user) {
     return (
-      <main className="max-w-2xl mx-auto px-6 py-16 text-center">
-        <p className="text-gray-500 mb-4">Please login to view your cart.</p>
+      <main className="max-w-2xl mx-auto px-6 py-20 text-center">
+        <p className="text-gray-500 mb-5">Please log in to view your cart.</p>
         <button
           onClick={() => router.push('/login')}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-2 rounded hover:shadow-lg transition-all"
+          className="bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold px-6 py-3 rounded-xl transition-colors"
         >
-          Login
+          Log in
         </button>
       </main>
     );
   }
 
-  if (isLoading) return <p className="text-center py-16 text-gray-500">Loading...</p>;
+  if (isLoading) {
+    return (
+      <main className="max-w-5xl mx-auto px-6 py-8 space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="bg-gray-100 rounded-2xl h-24 animate-pulse" />
+        ))}
+      </main>
+    );
+  }
 
   if (!cart || cart.items.length === 0) {
     return (
-      <main className="max-w-2xl mx-auto px-6 py-16 text-center">
-        <p className="text-gray-500 mb-4">Your cart is empty.</p>
-        <button
-          onClick={() => router.push('/products')}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-2 rounded hover:shadow-lg transition-all"
+      <main className="max-w-2xl mx-auto px-6 py-20 text-center">
+        <p className="text-4xl mb-4">🛒</p>
+        <p className="text-gray-700 font-semibold mb-2">Your cart is empty</p>
+        <p className="text-gray-400 text-sm mb-6">Add some products and come back here.</p>
+        <Link
+          href="/products"
+          className="bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold px-6 py-3 rounded-xl transition-colors inline-block"
         >
           Browse Products
-        </button>
+        </Link>
       </main>
     );
   }
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
-
-      <div className="space-y-4">
-        {cart.items.map((item) => (
-          <div key={item.id} className="flex items-center gap-4 border border-gray-200 rounded-lg p-4">
-            <div className="w-20 h-20 bg-orange-50 rounded relative flex-shrink-0">
-              {item.product.imageUrl ? (
-                <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover rounded" />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 text-xs">No Image</div>
-              )}
-            </div>
-
-            <div className="flex-1">
-              <p className="font-semibold text-gray-800">{item.product.name}</p>
-              <p className="text-orange-600 font-semibold">¥{item.product.price.toLocaleString()}</p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => updateMutation.mutate({ itemId: item.id, quantity: item.quantity - 1 })}
-                disabled={item.quantity <= 1}
-                className="w-8 h-8 border rounded hover:bg-orange-50 disabled:opacity-30"
-              >
-                -
-              </button>
-              <span className="w-8 text-center">{item.quantity}</span>
-              <button
-                onClick={() => updateMutation.mutate({ itemId: item.id, quantity: item.quantity + 1 })}
-                className="w-8 h-8 border rounded hover:bg-orange-50"
-              >
-                +
-              </button>
-            </div>
-
-            <button
-              onClick={() => removeMutation.mutate(item.id)}
-              className="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 transition-all"
-              aria-label={`Remove ${item.product.name}`}
-              title="Remove item"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
-              </svg>
-            </button>
-          </div>
-        ))}
+    <main className="max-w-5xl mx-auto px-6 py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Your Cart</h1>
+        <p className="text-gray-500 text-sm mt-0.5">{cart.items.length} item{cart.items.length !== 1 ? 's' : ''}</p>
       </div>
 
-      <div className="mt-8 border-t pt-6 flex items-center justify-between">
-        <div>
-          <p className="text-gray-500">Total</p>
-          <p className="text-2xl font-bold text-gray-800">¥{cart.total.toLocaleString()}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        {/* Item list */}
+        <div className="lg:col-span-2 space-y-3">
+          {cart.items.map((item) => (
+            <div key={item.id} className="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-4">
+              <div className="w-20 h-20 bg-gray-100 rounded-xl relative flex-shrink-0 overflow-hidden">
+                {item.product.imageUrl ? (
+                  <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover rounded-xl" />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400 text-xs">No Image</div>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 text-sm truncate">{item.product.name}</p>
+                <p className="text-[#1a6b1f] font-bold text-sm mt-0.5">¥{item.product.price.toLocaleString()}</p>
+              </div>
+
+              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => updateMutation.mutate({ itemId: item.id, quantity: item.quantity - 1 })}
+                  disabled={item.quantity <= 1}
+                  className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30 transition-colors font-bold"
+                >−</button>
+                <span className="w-9 text-center text-sm font-semibold text-gray-900">{item.quantity}</span>
+                <button
+                  onClick={() => updateMutation.mutate({ itemId: item.id, quantity: item.quantity + 1 })}
+                  className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors font-bold"
+                >+</button>
+              </div>
+
+              <p className="text-sm font-bold text-gray-900 w-20 text-right hidden sm:block">
+                ¥{(item.product.price * item.quantity).toLocaleString()}
+              </p>
+
+              <button
+                onClick={() => removeMutation.mutate(item.id)}
+                className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                aria-label={`Remove ${item.product.name}`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ))}
         </div>
-        <button
-          onClick={() => router.push('/checkout')}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-all"
-        >
-          Proceed to Checkout
-        </button>
+
+        {/* Summary sidebar */}
+        <aside className="bg-white border border-gray-200 rounded-2xl p-6 sticky top-24">
+          <h2 className="font-bold text-gray-900 mb-4">Order Summary</h2>
+
+          <div className="space-y-2 mb-4">
+            {cart.items.map((item) => (
+              <div key={item.id} className="flex justify-between text-sm text-gray-600">
+                <span className="truncate max-w-[140px]">{item.product.name} ×{item.quantity}</span>
+                <span className="flex-shrink-0 ml-2">¥{(item.product.price * item.quantity).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-gray-100 pt-4 mb-5 flex justify-between font-bold text-gray-900">
+            <span>Total</span>
+            <span>¥{cart.total.toLocaleString()}</span>
+          </div>
+
+          <button
+            onClick={() => router.push('/checkout')}
+            className="w-full bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold py-3.5 rounded-xl transition-colors"
+          >
+            Proceed to Checkout
+          </button>
+          <Link
+            href="/products"
+            className="block text-center text-sm text-gray-500 hover:text-[#1a6b1f] mt-3 transition-colors"
+          >
+            Continue shopping
+          </Link>
+        </aside>
       </div>
     </main>
   );

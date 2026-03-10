@@ -24,29 +24,29 @@ export default function ChangePasswordPage() {
         newPassword: form.newPassword,
       }).then((r) => r.data),
     onSuccess: () => {
-      setSuccess('Password changed successfully.');
+      setSuccess('パスワードを変更しました。');
       setError('');
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     },
     onError: (err: unknown) => {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-        ?? 'Failed to change password';
+        ?? 'パスワードの変更に失敗しました';
       setError(msg);
       setSuccess('');
     },
   });
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
+  const handleSubmit = (e: { preventDefault(): void }) => {
     e.preventDefault();
     setSuccess('');
     setError('');
     if (form.newPassword !== form.confirmPassword) {
-      setError('New passwords do not match');
+      setError('新しいパスワードが一致しません');
       return;
     }
     if (form.newPassword.length < 8) {
-      setError('New password must be at least 8 characters');
+      setError('新しいパスワードは8文字以上にしてください');
       return;
     }
     mutation.mutate();
@@ -54,53 +54,52 @@ export default function ChangePasswordPage() {
 
   if (!user) return null;
 
+  const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1a6b1f] focus:border-transparent';
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Change Password</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-6">パスワード変更</h1>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        {success && <p className="text-green-600 text-sm bg-green-50 px-3 py-2 rounded-lg mb-4">{success}</p>}
-        {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg mb-4">{error}</p>}
+      <div className="bg-white border border-gray-200 rounded-2xl p-6">
+        {success && <p className="text-green-700 text-sm bg-green-50 px-4 py-3 rounded-xl mb-4 border border-green-100">{success}</p>}
+        {error && <p className="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-xl mb-4 border border-red-100">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">現在のパスワード</label>
             <input
-              required
-              type="password"
+              required type="password"
               value={form.currentPassword}
               onChange={(e) => setForm({ ...form, currentPassword: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">新しいパスワード</label>
             <input
-              required
-              type="password"
+              required type="password"
               value={form.newPassword}
               onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
               minLength={8}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className={inputClass}
             />
-            <p className="text-xs text-gray-400 mt-1">Minimum 8 characters</p>
+            <p className="text-xs text-gray-400 mt-1.5">8文字以上</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">新しいパスワード（確認）</label>
             <input
-              required
-              type="password"
+              required type="password"
               value={form.confirmPassword}
               onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className={inputClass}
             />
           </div>
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="w-full bg-amber-400 text-gray-900 font-semibold py-2 rounded-full hover:bg-amber-300 disabled:opacity-50 transition-all"
+            className="w-full bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
           >
-            {mutation.isPending ? 'Changing...' : 'Change Password'}
+            {mutation.isPending ? '変更中...' : 'パスワードを変更'}
           </button>
         </form>
       </div>

@@ -20,12 +20,12 @@ interface Order {
   }[];
 }
 
-const statusColors: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  PAID: 'bg-green-100 text-green-800',
-  SHIPPED: 'bg-blue-100 text-blue-800',
-  DELIVERED: 'bg-purple-100 text-purple-800',
-  CANCELLED: 'bg-red-100 text-red-800',
+const statusStyle: Record<string, string> = {
+  PENDING:   'bg-yellow-50 text-yellow-700 border-yellow-200',
+  PAID:      'bg-green-50 text-green-700 border-green-200',
+  SHIPPED:   'bg-blue-50 text-blue-700 border-blue-200',
+  DELIVERED: 'bg-purple-50 text-purple-700 border-purple-200',
+  CANCELLED: 'bg-red-50 text-red-600 border-red-200',
 };
 
 export default function OrdersPage() {
@@ -41,28 +41,38 @@ export default function OrdersPage() {
   if (!user) {
     return (
       <div className="py-12 text-center">
-        <p className="text-gray-500 mb-4">Please login to view your orders.</p>
+        <p className="text-gray-500 mb-4">注文履歴を見るにはログインしてください。</p>
         <button
           onClick={() => router.push('/login')}
-          className="bg-amber-400 text-gray-900 font-semibold px-6 py-2 rounded-full hover:bg-amber-300 transition-all"
+          className="bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold px-6 py-3 rounded-xl transition-colors"
         >
-          Login
+          ログイン
         </button>
       </div>
     );
   }
 
-  if (isLoading) return <p className="py-12 text-center text-gray-400">Loading...</p>;
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="bg-gray-100 rounded-2xl h-32 animate-pulse" />
+        ))}
+      </div>
+    );
+  }
 
   if (!orders || orders.length === 0) {
     return (
       <div className="py-12 text-center">
-        <p className="text-gray-500 mb-4">No orders yet.</p>
+        <p className="text-4xl mb-3">📦</p>
+        <p className="text-gray-700 font-semibold mb-2">注文履歴がありません</p>
+        <p className="text-gray-400 text-sm mb-6">注文履歴はこちらに表示されます。</p>
         <Link
           href="/products"
-          className="bg-amber-400 text-gray-900 font-semibold px-6 py-2 rounded-full hover:bg-amber-300 transition-all"
+          className="bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold px-6 py-3 rounded-xl transition-colors inline-block"
         >
-          Start Shopping
+          買い物を始める
         </Link>
       </div>
     );
@@ -70,17 +80,17 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Order History</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-6">注文履歴</h1>
 
       <div className="space-y-4">
         {orders.map((order) => (
-          <div key={order.id} className="bg-white border border-gray-200 rounded-xl p-6">
+          <div key={order.id} className="bg-white border border-gray-200 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs text-gray-400">Order ID</p>
-                <p className="font-mono text-sm text-gray-700">{order.id}</p>
+                <p className="text-xs text-gray-400 mb-0.5">注文ID</p>
+                <p className="font-mono text-xs text-gray-700">{order.id}</p>
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[order.status]}`}>
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${statusStyle[order.status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                 {order.status}
               </span>
             </div>
@@ -94,11 +104,11 @@ export default function OrdersPage() {
               ))}
             </div>
 
-            <div className="border-t pt-3 flex items-center justify-between">
-              <p className="text-sm text-gray-400">
+            <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
+              <p className="text-xs text-gray-400">
                 {new Date(order.createdAt).toLocaleDateString('ja-JP')}
               </p>
-              <p className="font-bold text-gray-900">¥{order.total.toLocaleString()}</p>
+              <p className="font-bold text-gray-900 text-sm">¥{order.total.toLocaleString()}</p>
             </div>
           </div>
         ))}

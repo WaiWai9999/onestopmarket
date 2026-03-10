@@ -56,19 +56,19 @@ export default function ProfilePage() {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       if (token) setAuth({ ...user!, name: updated.name, email: updated.email }, token);
-      setSuccess('Profile updated successfully.');
+      setSuccess('プロフィールを更新しました。');
       setError('');
     },
     onError: (err: unknown) => {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-        ?? 'Failed to update profile';
+        ?? 'プロフィールの更新に失敗しました';
       setError(msg);
       setSuccess('');
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSuccess('');
     setError('');
@@ -77,74 +77,56 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
+  const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1a6b1f] focus:border-transparent';
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h1>
-
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <div className="mb-5 text-sm text-gray-500">
-          Role:{' '}
-          <span className={`font-semibold ${profile?.role === 'ADMIN' ? 'text-amber-500' : 'text-gray-700'}`}>
-            {profile?.role}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-bold text-gray-900">プロフィール</h1>
+        {profile?.role && (
+          <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+            profile.role === 'ADMIN'
+              ? 'bg-[#1a6b1f]/10 text-[#1a6b1f] border-[#1a6b1f]/20'
+              : 'bg-gray-100 text-gray-600 border-gray-200'
+          }`}>
+            {profile.role}
           </span>
-        </div>
+        )}
+      </div>
 
-        {success && <p className="text-green-600 text-sm bg-green-50 px-3 py-2 rounded-lg mb-4">{success}</p>}
-        {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg mb-4">{error}</p>}
+      <div className="bg-white border border-gray-200 rounded-2xl p-6">
+        {success && <p className="text-green-700 text-sm bg-green-50 px-4 py-3 rounded-xl mb-4 border border-green-100">{success}</p>}
+        {error && <p className="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-xl mb-4 border border-red-100">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">お名前</label>
+            <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              required
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">メールアドレス</label>
+            <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClass} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-            <input
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-              placeholder="Tokyo, Shibuya-ku 1-1-1"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">住所</label>
+            <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="東京都渋谷区1-1-1" className={inputClass} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-            <input
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              placeholder="090-1234-5678"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">電話番号</label>
+            <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="090-1234-5678" className={inputClass} />
           </div>
           <button
             type="submit"
             disabled={updateMutation.isPending}
-            className="w-full bg-amber-400 text-gray-900 font-semibold py-2 rounded-full hover:bg-amber-300 disabled:opacity-50 transition-all"
+            className="w-full bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
           >
-            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            {updateMutation.isPending ? '保存中...' : '変更を保存'}
           </button>
         </form>
 
         <div className="mt-5 pt-5 border-t border-gray-100">
-          <Link
-            href="/mypage/password"
-            className="text-sm text-amber-600 hover:text-amber-500 font-medium"
-          >
-            Change Password →
+          <Link href="/mypage/password" className="text-sm text-[#1a6b1f] hover:text-[#155318] font-medium transition-colors">
+            パスワード変更 →
           </Link>
         </div>
       </div>
