@@ -1,13 +1,17 @@
 import type { NextConfig } from 'next';
 
+const s3Hostname = process.env.S3_HOSTNAME || '';
+
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'onestopmarket-images.s3.ap-northeast-1.amazonaws.com',
-      },
-    ],
+    remotePatterns: s3Hostname
+      ? [
+          {
+            protocol: 'https',
+            hostname: s3Hostname,
+          },
+        ]
+      : [],
   },
   async rewrites() {
     return [
