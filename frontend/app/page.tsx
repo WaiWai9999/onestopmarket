@@ -9,6 +9,7 @@ import api from '@/lib/axios';
 import TopBar from '@/components/layout/TopBar';
 import Ticker from '@/components/layout/Ticker';
 import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 
 // ── Types ──
 
@@ -79,15 +80,6 @@ const coupons = [
   { value: '500', unit: '円OFF', desc: '初回購入限定', expires: '〜8月10日まで' },
   { value: 'P5', unit: '倍', desc: 'ポイント5倍デー', expires: '本日のみ！' },
 ];
-
-const footerLinks = [
-  { title: 'ショッピング', links: ['商品を探す', 'ランキング', 'セール・特集', 'クーポン'] },
-  { title: '会員サービス', links: ['会員登録（無料）', 'ログイン', 'ポイント確認', 'プレミアム会員'] },
-  { title: '注文・配送', links: ['注文履歴', '配送状況確認', '返品・交換', 'お支払い方法'] },
-  { title: 'サポート', links: ['よくある質問', 'お問い合わせ', 'ストア出店', 'プレスリリース'] },
-];
-
-const footerBottom = ['利用規約', 'プライバシーポリシー', '特定商取引法に基づく表記', '会社概要', 'サイトマップ'];
 
 const miniBanners = [
   { bg: 'linear-gradient(135deg, #0075c2, #0099ff)', icon: '🚚', label: '今なら', title: '送料無料', sub: '3,000円以上' },
@@ -501,7 +493,7 @@ export default function Home() {
 
           {/* Coupons */}
           <SectionBox>
-            <SectionHeader icon="🎟" title="お得なクーポン" linkText="クーポン一覧 ›" linkHref="/products" />
+            <SectionHeader icon="🎟" title="お得なクーポン" linkText="クーポン一覧 ›" linkHref="/mypage/coupons" />
             <div className="grid grid-cols-4 gap-2 p-3">
               {coupons.map((c, i) => (
                 <div
@@ -566,50 +558,7 @@ export default function Home() {
         </main>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-3 bg-white" style={{ borderTop: '3px solid var(--color-primary)' }}>
-        <div className="mx-auto" style={{ maxWidth: 1200, padding: '24px 12px' }}>
-          <div className="mb-6 flex flex-wrap" style={{ gap: '0 48px' }}>
-            {footerLinks.map((col) => (
-              <div key={col.title} style={{ minWidth: 140 }}>
-                <div className="mb-2 font-bold" style={{ fontSize: '0.8rem' }}>{col.title}</div>
-                {col.links.map((link) => (
-                  <div key={link} className="mb-1">
-                    <Link
-                      href="/products"
-                      className="transition-colors duration-150 hover:text-[var(--color-primary)]"
-                      style={{ fontSize: '0.75rem', color: '#666' }}
-                    >
-                      {link}
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-2" style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: 16 }}>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>
-              <span style={{ color: 'var(--color-primary)' }}>モール</span>
-              <span style={{ color: 'var(--color-text)' }}>ショップ</span>
-            </div>
-            <div className="flex gap-4">
-              {footerBottom.map((item) => (
-                <Link
-                  key={item}
-                  href="/about"
-                  className="transition-colors duration-150 hover:text-[var(--color-primary)]"
-                  style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}
-                >
-                  {item}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div className="mt-3 text-center" style={{ fontSize: '0.72rem', color: 'var(--color-text-very-light)' }}>
-            © 2026 モールショップ. All Rights Reserved.
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

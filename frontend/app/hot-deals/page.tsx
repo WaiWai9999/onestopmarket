@@ -8,6 +8,7 @@ import api from '@/lib/axios';
 import TopBar from '@/components/layout/TopBar';
 import Ticker from '@/components/layout/Ticker';
 import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 
 interface Product {
   id: string;
@@ -713,6 +714,7 @@ export default function HotDealsPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }

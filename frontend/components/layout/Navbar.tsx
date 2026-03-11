@@ -18,6 +18,7 @@ function NavbarInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
+  const isAdmin = user?.role === 'ADMIN';
 
   const getActiveNav = () => {
     if (pathname === '/') return 'トップ';
@@ -134,21 +135,74 @@ function NavbarInner() {
 
           {/* Right buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
-            <Link href="/favorites" style={{
-              textAlign: 'center',
-              fontSize: '0.68rem',
-              color: activeNav === 'お気に入り' ? '#ff0033' : '#444',
-              textDecoration: 'none',
-              transition: 'color 0.15s',
-            }}>
-              <div style={{ fontSize: '1.2rem' }}>{activeNav === 'お気に入り' ? '♥' : '♡'}</div>
-              お気に入り
-            </Link>
-            <Link href="/mypage/orders" style={{ textAlign: 'center', fontSize: '0.68rem', color: '#444', textDecoration: 'none' }}>
-              <div style={{ fontSize: '1.2rem' }}>📋</div>
-              注文履歴
-            </Link>
-            <Link href="/cart" style={{
+            {/* Admin: show admin panel link */}
+            {_hasHydrated && isAdmin && (
+              <Link href="/admin" style={{
+                textAlign: 'center',
+                fontSize: '0.68rem',
+                color: pathname.startsWith('/admin') ? '#ff0033' : '#444',
+                textDecoration: 'none',
+                transition: 'color 0.15s',
+              }}>
+                <div style={{ fontSize: '1.2rem' }}>⚙️</div>
+                管理
+              </Link>
+            )}
+
+            {/* Guest: show login/register */}
+            {_hasHydrated && !user && (
+              <>
+                <Link href="/login" style={{
+                  textAlign: 'center',
+                  fontSize: '0.68rem',
+                  color: '#444',
+                  textDecoration: 'none',
+                  transition: 'color 0.15s',
+                }}>
+                  <div style={{ fontSize: '1.2rem' }}>👤</div>
+                  ログイン
+                </Link>
+                <Link href="/register" style={{
+                  textAlign: 'center',
+                  fontSize: '0.68rem',
+                  color: '#ff0033',
+                  textDecoration: 'none',
+                  border: '1px solid #ff0033',
+                  borderRadius: 4,
+                  padding: '4px 10px',
+                }}>
+                  <div style={{ fontSize: '1.2rem' }}>✨</div>
+                  新規登録
+                </Link>
+              </>
+            )}
+
+            {/* User/Admin: show favorites, orders, mypage */}
+            {_hasHydrated && user && (
+              <>
+                <Link href="/favorites" style={{
+                  textAlign: 'center',
+                  fontSize: '0.68rem',
+                  color: activeNav === 'お気に入り' ? '#ff0033' : '#444',
+                  textDecoration: 'none',
+                  transition: 'color 0.15s',
+                }}>
+                  <div style={{ fontSize: '1.2rem' }}>{activeNav === 'お気に入り' ? '♥' : '♡'}</div>
+                  お気に入り
+                </Link>
+                <Link href="/mypage/orders" style={{ textAlign: 'center', fontSize: '0.68rem', color: '#444', textDecoration: 'none' }}>
+                  <div style={{ fontSize: '1.2rem' }}>📋</div>
+                  注文履歴
+                </Link>
+                <Link href="/mypage" style={{ textAlign: 'center', fontSize: '0.68rem', color: pathname.startsWith('/mypage') ? '#ff0033' : '#444', textDecoration: 'none' }}>
+                  <div style={{ fontSize: '1.2rem' }}>👤</div>
+                  マイページ
+                </Link>
+              </>
+            )}
+
+            {/* Cart (always visible, but redirects guest to login) */}
+            <Link href={user ? '/cart' : '/login'} style={{
               textAlign: 'center',
               fontSize: '0.68rem',
               color: '#ff0033',
@@ -229,10 +283,10 @@ function NavbarInner() {
             textDecoration: 'none',
             borderBottom: activeNav === 'セール' ? '2px solid #ff0033' : '2px solid transparent',
           }}>
-            🔥 セール
+            セール
           </Link>
           <span style={{ width: 1, height: 16, background: '#e0e0e0', flexShrink: 0 }} />
-          <Link href="/products" style={{
+          <Link href="/mypage/coupons" style={{
             padding: '10px 14px',
             fontSize: '0.82rem',
             fontWeight: 700,
@@ -240,7 +294,7 @@ function NavbarInner() {
             whiteSpace: 'nowrap',
             textDecoration: 'none',
           }}>
-            🎁 クーポン
+            クーポン
           </Link>
         </div>
       </nav>

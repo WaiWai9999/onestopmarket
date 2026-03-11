@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { useAuthStore } from '@/store/auth.store';
 
-interface User {
+interface UserItem {
   id: string;
   email: string;
   name: string;
@@ -18,14 +16,9 @@ interface User {
 
 export default function AdminUsersPage() {
   const { user, isAdmin } = useAuthStore();
-  const router = useRouter();
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!user || !isAdmin()) router.push('/');
-  }, [user, isAdmin, router]);
-
-  const { data: users, isLoading } = useQuery<User[]>({
+  const { data: users, isLoading } = useQuery<UserItem[]>({
     queryKey: ['admin-users'],
     queryFn: () => api.get('/users').then((r) => r.data),
     enabled: !!user && isAdmin(),
@@ -37,65 +30,93 @@ export default function AdminUsersPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
   });
 
-  if (isLoading) return <p className="py-16 text-center text-gray-400">Loading...</p>;
+  const allUsers = users ?? [];
+  const adminCount = allUsers.filter((u) => u.role === 'ADMIN').length;
+  const customerCount = allUsers.filter((u) => u.role === 'CUSTOMER').length;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Users</h1>
-        <span className="text-sm text-gray-400">{users?.length ?? 0} total</span>
+      {/* Page header */}
+      <div style={{ background: 'white', border: '1px solid #e0e0e0', borderRadius: 4, padding: '18px 22px', marginBottom: 12 }}>
+        <h1 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#222', margin: '0 0 4px' }}>ユーザー管理</h1>
+        <p style={{ fontSize: '0.78rem', color: '#888', margin: 0 }}>
+          全 {allUsers.length} 件（管理者: {adminCount} / 顧客: {customerCount}）
+        </p>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-[#ff0033]/5">
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Phone</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Joined</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Role</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {users?.map((u) => (
-              <tr key={u.id} className="hover:bg-[#ff0033]/5 transition-colors">
-                <td className="px-4 py-3">
-                  <p className="font-medium text-gray-800">{u.name}</p>
-                  {u.address && <p className="text-xs text-gray-400 truncate max-w-[140px]">{u.address}</p>}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-600">{u.email}</td>
-                <td className="px-4 py-3 text-sm text-gray-500">{u.phone ?? '—'}</td>
-                <td className="px-4 py-3 text-sm text-gray-400">
-                  {new Date(u.createdAt).toLocaleDateString('ja-JP')}
-                </td>
-                <td className="px-4 py-3">
-                  {u.id === user?.id ? (
-                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#ff0033]/10 text-[#ff0033]">
-                      {u.role} (you)
-                    </span>
-                  ) : (
-                    <select
-                      value={u.role}
-                      onChange={(e) =>
-                        roleMutation.mutate({ id: u.id, role: e.target.value as 'CUSTOMER' | 'ADMIN' })
-                      }
-                      className={`border rounded-lg px-2 py-1 text-xs font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0033] ${
-                        u.role === 'ADMIN'
-                          ? 'border-[#ff0033] bg-[#ff0033]/10 text-[#ff0033]'
-                          : 'border-gray-200 text-gray-700'
-                      }`}
-                    >
-                      <option value="CUSTOMER">CUSTOMER</option>
-                      <option value="ADMIN">ADMIN</option>
-                    </select>
-                  )}
-                </td>
+      {/* Table */}
+      {isLoading ? (
+        <div style={{ background: 'white', border: '1px solid #e0e0e0', borderRadius: 4, padding: '48px 0', textAlign: 'center' }}>
+          <p style={{ color: '#888', fontSize: '0.85rem' }}>読み込み中...</p>
+        </div>
+      ) : (
+        <div style={{ background: 'white', border: '1px solid #e0e0e0', borderRadius: 4, overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #ff0033' }}>
+                {['ユーザー名', 'メール', '電話番号', '登録日', 'ロール'].map((h) => (
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: '0.72rem', fontWeight: 700, color: '#555' }}>{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {allUsers.map((u) => (
+                <tr key={u.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                  <td style={{ padding: '10px 14px' }}>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#222', margin: '0 0 2px' }}>{u.name}</p>
+                    {u.address && (
+                      <p style={{ fontSize: '0.68rem', color: '#aaa', margin: 0, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.address}</p>
+                    )}
+                  </td>
+                  <td style={{ padding: '10px 14px', fontSize: '0.82rem', color: '#555' }}>{u.email}</td>
+                  <td style={{ padding: '10px 14px', fontSize: '0.82rem', color: '#888' }}>{u.phone ?? '—'}</td>
+                  <td style={{ padding: '10px 14px', fontSize: '0.78rem', color: '#aaa' }}>
+                    {new Date(u.createdAt).toLocaleDateString('ja-JP')}
+                  </td>
+                  <td style={{ padding: '10px 14px' }}>
+                    {u.id === user?.id ? (
+                      <span style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        color: '#ff0033',
+                        background: '#fff5f5',
+                        padding: '3px 10px',
+                        borderRadius: 3,
+                      }}>
+                        {u.role === 'ADMIN' ? '管理者' : '顧客'}（自分）
+                      </span>
+                    ) : (
+                      <select
+                        value={u.role}
+                        onChange={(e) => roleMutation.mutate({ id: u.id, role: e.target.value as 'CUSTOMER' | 'ADMIN' })}
+                        style={{
+                          border: `1px solid ${u.role === 'ADMIN' ? '#ff0033' : '#ddd'}`,
+                          borderRadius: 3,
+                          padding: '4px 8px',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          color: u.role === 'ADMIN' ? '#ff0033' : '#444',
+                          background: u.role === 'ADMIN' ? '#fff5f5' : 'white',
+                          outline: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <option value="CUSTOMER">顧客</option>
+                        <option value="ADMIN">管理者</option>
+                      </select>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {allUsers.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ padding: '32px 0', textAlign: 'center', fontSize: '0.85rem', color: '#888' }}>ユーザーがいません</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

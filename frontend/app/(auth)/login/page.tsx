@@ -11,7 +11,7 @@ export default function LoginPage() {
   const { setAuth, user, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    if (_hasHydrated && user) router.push('/products');
+    if (_hasHydrated && user) router.push('/');
   }, [_hasHydrated, user, router]);
 
   const [form, setForm] = useState({ email: '', password: '' });
@@ -33,78 +33,230 @@ export default function LoginPage() {
     try {
       const { data } = await api.post('/auth/login', form);
       setAuth(data.user, data.accessToken);
-      router.push('/products');
+      if (data.user.role === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
     } catch {
-      setError('Invalid email or password');
+      setError('メールアドレスまたはパスワードが正しくありません');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-[calc(100vh-64px)] grid md:grid-cols-2">
-      {/* Left: brand panel */}
-      <div className="hidden md:flex flex-col justify-center bg-[#ff0033] text-white p-6 px-12 text-white">
-        <span className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-4">OneStopMarket</span>
-        <h2 className="text-3xl font-bold leading-snug mb-3">
-          Welcome back.<br />Good to see you.
-        </h2>
-        <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-          Log in to manage your orders, track shipments, and pick up right where you left off.
-        </p>
-      </div>
+    <div style={{ background: '#f4f4f4', minHeight: '100vh' }}>
+      {/* Mini header */}
+      <header style={{ background: 'white', borderBottom: '3px solid #ff0033', padding: '12px 0' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 700, lineHeight: 1.1 }}>
+                <span style={{ color: '#ff0033' }}>モール</span>
+                <span style={{ color: '#333' }}>ショップ</span>
+              </div>
+              <div style={{ fontSize: '0.55rem', color: '#888', letterSpacing: '0.05em' }}>
+                かんたんお買いもの
+              </div>
+            </div>
+          </Link>
+          <Link href="/support" style={{ fontSize: '0.78rem', color: '#0075c2', textDecoration: 'none' }}>
+            お困りの方はこちら
+          </Link>
+        </div>
+      </header>
 
-      {/* Right: form */}
-      <div className="flex items-center justify-center px-6 py-12 bg-gray-50">
-        <div className="w-full max-w-sm">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Log in</h1>
-          <p className="text-sm text-gray-500 mb-7">
-            No account?{' '}
-            <Link href="/register" className="text-[#ff0033] hover:text-[#cc0029] font-medium">
-              Sign up free
-            </Link>
+      {/* Main */}
+      <div style={{ maxWidth: 440, margin: '0 auto', padding: '40px 16px 60px' }}>
+        {/* Title */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#222', margin: '0 0 6px' }}>ログイン</h1>
+          <p style={{ fontSize: '0.78rem', color: '#888' }}>
+            モールショップのアカウントでログイン
           </p>
+        </div>
 
+        {/* Card */}
+        <div style={{ background: 'white', border: '1px solid #e0e0e0', borderRadius: 4, padding: '28px 24px' }}>
           {sessionExpired && (
-            <p className="bg-yellow-50 text-yellow-700 text-sm px-4 py-3 rounded-xl mb-4 border border-yellow-200">
-              Your session has expired. Please log in again.
-            </p>
+            <div style={{ background: '#fff9e6', border: '1px solid #f5c842', borderRadius: 3, padding: '10px 14px', marginBottom: 16, fontSize: '0.8rem', color: '#664d00' }}>
+              セッションの有効期限が切れました。再度ログインしてください。
+            </div>
           )}
           {error && (
-            <p className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl mb-4 border border-red-100">{error}</p>
+            <div style={{ background: '#fff5f5', border: '1px solid #ffcdd2', borderRadius: 3, padding: '10px 14px', marginBottom: 16, fontSize: '0.8rem', color: '#c62828' }}>
+              {error}
+            </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#333', marginBottom: 6 }}>
+                メールアドレス
+              </label>
               <input
                 type="email"
                 required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#ff0033] focus:border-transparent"
+                placeholder="example@mail.com"
+                style={{
+                  width: '100%',
+                  border: '1px solid #ddd',
+                  borderRadius: 3,
+                  padding: '10px 12px',
+                  fontSize: '0.88rem',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.15s',
+                }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#ff0033')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = '#ddd')}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#333', marginBottom: 6 }}>
+                パスワード
+              </label>
               <input
                 type="password"
                 required
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#ff0033] focus:border-transparent"
+                placeholder="パスワードを入力"
+                style={{
+                  width: '100%',
+                  border: '1px solid #ddd',
+                  borderRadius: 3,
+                  padding: '10px 12px',
+                  fontSize: '0.88rem',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.15s',
+                }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#ff0033')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = '#ddd')}
               />
             </div>
+
+            <div style={{ textAlign: 'right', marginBottom: 20 }}>
+              <Link href="/support" style={{ fontSize: '0.72rem', color: '#0075c2', textDecoration: 'none' }}>
+                パスワードをお忘れの方
+              </Link>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#ff0033] hover:bg-[#cc0029] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
+              style={{
+                width: '100%',
+                background: loading ? '#ccc' : '#ff0033',
+                color: 'white',
+                border: 'none',
+                borderRadius: 3,
+                padding: '13px 0',
+                fontSize: '0.95rem',
+                fontWeight: 700,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = '#cc0029'; }}
+              onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = '#ff0033'; }}
             >
-              {loading ? 'Logging in...' : 'Log in'}
+              {loading ? 'ログイン中...' : 'ログイン'}
             </button>
           </form>
+
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+            <div style={{ flex: 1, height: 1, background: '#e8e8e8' }} />
+            <span style={{ fontSize: '0.72rem', color: '#aaa' }}>または</span>
+            <div style={{ flex: 1, height: 1, background: '#e8e8e8' }} />
+          </div>
+
+          {/* Social login buttons (placeholder) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button
+              type="button"
+              disabled
+              style={{
+                width: '100%',
+                background: 'white',
+                border: '1px solid #ddd',
+                borderRadius: 3,
+                padding: '10px 0',
+                fontSize: '0.82rem',
+                fontWeight: 500,
+                color: '#555',
+                cursor: 'not-allowed',
+                opacity: 0.6,
+              }}
+            >
+              Googleでログイン
+            </button>
+            <button
+              type="button"
+              disabled
+              style={{
+                width: '100%',
+                background: 'white',
+                border: '1px solid #ddd',
+                borderRadius: 3,
+                padding: '10px 0',
+                fontSize: '0.82rem',
+                fontWeight: 500,
+                color: '#555',
+                cursor: 'not-allowed',
+                opacity: 0.6,
+              }}
+            >
+              LINEでログイン
+            </button>
+          </div>
+        </div>
+
+        {/* Register CTA */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #e0e0e0',
+          borderRadius: 4,
+          padding: '18px 24px',
+          marginTop: 12,
+          textAlign: 'center',
+        }}>
+          <p style={{ fontSize: '0.82rem', color: '#555', margin: '0 0 10px' }}>
+            まだアカウントをお持ちでないですか？
+          </p>
+          <Link
+            href="/register"
+            style={{
+              display: 'block',
+              border: '1px solid #ff0033',
+              color: '#ff0033',
+              borderRadius: 3,
+              padding: '10px 0',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              textDecoration: 'none',
+              textAlign: 'center',
+              transition: 'background 0.15s, color 0.15s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#ff0033'; e.currentTarget.style.color = 'white'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#ff0033'; }}
+          >
+            新規会員登録（無料）
+          </Link>
+        </div>
+
+        {/* Trust badges */}
+        <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 20, fontSize: '0.68rem', color: '#999' }}>
+          <span>🔒 SSL暗号化通信</span>
+          <span>🛡️ 個人情報保護</span>
+          <span>✓ 安心のセキュリティ</span>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

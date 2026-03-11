@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import TopBar from '@/components/layout/TopBar';
 import Ticker from '@/components/layout/Ticker';
 import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 
 const STEPS = ['カート', 'お届け先', 'お支払い', '確認', '完了'];
 
@@ -99,6 +100,7 @@ export default function CompletePage() {
       <Suspense>
         <CompleteContent />
       </Suspense>
+      <Footer />
     </>
   );
 }

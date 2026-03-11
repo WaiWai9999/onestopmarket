@@ -10,6 +10,7 @@ import { OrdersModule } from './orders/orders.module';
 import { CategoriesModule } from './categories/categories.module';
 import { UsersModule } from './users/users.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { CouponsModule } from './coupons/coupons.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { FavoritesModule } from './favorites/favorites.module';
     OrdersModule,
     UsersModule,
     FavoritesModule,
+    CouponsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

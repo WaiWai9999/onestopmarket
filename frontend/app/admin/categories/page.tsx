@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -12,29 +11,16 @@ interface Category {
   slug: string;
 }
 
-type FormState = {
-  name: string;
-  slug: string;
-};
-
-const emptyForm: FormState = {
-  name: '',
-  slug: '',
-};
+type FormState = { name: string; slug: string };
+const emptyForm: FormState = { name: '', slug: '' };
 
 export default function AdminCategoriesPage() {
   const { user, isAdmin } = useAuthStore();
-  const router = useRouter();
   const queryClient = useQueryClient();
-
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saveError, setSaveError] = useState('');
-
-  useEffect(() => {
-    if (!user || !isAdmin()) router.push('/');
-  }, [user, isAdmin, router]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-categories'],
@@ -45,17 +31,10 @@ export default function AdminCategoriesPage() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       setSaveError('');
-
       if (!editingId) {
-        await api.post('/categories', {
-          name: form.name,
-          slug: form.slug,
-        });
+        await api.post('/categories', { name: form.name, slug: form.slug });
       } else {
-        await api.patch(`/categories/${editingId}`, {
-          name: form.name,
-          slug: form.slug,
-        });
+        await api.patch(`/categories/${editingId}`, { name: form.name, slug: form.slug });
       }
     },
     onSuccess: () => {
@@ -66,26 +45,19 @@ export default function AdminCategoriesPage() {
       setSaveError('');
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Failed to save category';
-      setSaveError(msg);
+      setSaveError(err instanceof Error ? err.message : '保存に失敗しました');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/categories/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-categories'] }),
   });
 
   const handleEdit = (category: Category) => {
     setEditingId(category.id);
-    setForm({
-      name: category.name,
-      slug: category.slug,
-    });
+    setForm({ name: category.name, slug: category.slug });
     setShowForm(true);
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -93,167 +65,115 @@ export default function AdminCategoriesPage() {
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm);
+    setSaveError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    saveMutation.mutate();
-  };
-
-  if (isLoading)
-    return <p className="py-16 text-center text-gray-400">Loading...</p>;
+  const categories: Category[] = data ?? [];
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Categories</h1>
-
+      {/* Page header */}
+      <div style={{ background: 'white', border: '1px solid #e0e0e0', borderRadius: 4, padding: '18px 22px', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#222', margin: '0 0 4px' }}>カテゴリ管理</h1>
+          <p style={{ fontSize: '0.78rem', color: '#888', margin: 0 }}>全 {categories.length} 件のカテゴリ</p>
+        </div>
         <button
-          onClick={() => {
-            if (showForm) handleCancel();
-            else setShowForm(true);
+          onClick={() => { if (showForm) handleCancel(); else setShowForm(true); }}
+          style={{
+            background: showForm ? 'white' : '#ff0033',
+            color: showForm ? '#555' : 'white',
+            border: showForm ? '1px solid #ddd' : 'none',
+            borderRadius: 3,
+            padding: '8px 20px',
+            fontSize: '0.82rem',
+            fontWeight: 700,
+            cursor: 'pointer',
           }}
-          className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-            showForm
-              ? 'border border-gray-300 text-gray-600 hover:border-gray-400'
-              : 'bg-[#ff0033]/10 text-[#ff0033] hover:bg-[#ff0033]/20'
-          }`}
         >
-          {showForm ? 'Cancel' : '+ New Category'}
+          {showForm ? 'キャンセル' : '+ 新規カテゴリ'}
         </button>
       </div>
 
       {/* Form */}
       {showForm && (
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white border border-gray-200 rounded-xl p-6 mb-6 space-y-4"
-        >
-          <h2 className="font-semibold text-gray-800">
-            {editingId ? 'Edit Category' : 'New Category'}
+        <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(); }} style={{ background: 'white', border: '1px solid #e0e0e0', borderRadius: 4, padding: '22px', marginBottom: 12 }}>
+          <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#222', margin: '0 0 16px' }}>
+            {editingId ? 'カテゴリを編集' : '新規カテゴリを追加'}
           </h2>
-
           {saveError && (
-            <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">
-              {saveError}
-            </p>
+            <div style={{ background: '#fff5f5', border: '1px solid #ffcdd2', borderRadius: 3, padding: '10px 14px', marginBottom: 16, fontSize: '0.8rem', color: '#c62828' }}>{saveError}</div>
           )}
-
-          {/* Category Name */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Category Name
-            </label>
-
-            <input
-              required
-              value={form.name}
-              onChange={(e) => {
-                const name = e.target.value;
-
-                setForm((prev) => ({
-                  ...prev,
-                  name,
-                  slug:
-                    prev.slug ||
-                    (name.length > 0 ? name.charAt(0).toUpperCase() : ''),
-                }));
-              }}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ff0033]"
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#444', marginBottom: 4 }}>カテゴリ名</label>
+              <input
+                required
+                value={form.name}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setForm((prev) => ({ ...prev, name, slug: prev.slug || (name.length > 0 ? name.charAt(0).toUpperCase() : '') }));
+                }}
+                style={{ width: '100%', border: '1px solid #ddd', borderRadius: 3, padding: '8px 10px', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#444', marginBottom: 4 }}>スラッグ</label>
+              <input
+                required
+                value={form.slug}
+                onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
+                style={{ width: '100%', border: '1px solid #ddd', borderRadius: 3, padding: '8px 10px', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
           </div>
-
-          {/* Slug */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Slug
-            </label>
-
-            <input
-              required
-              value={form.slug}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  slug: e.target.value,
-                }))
-              }
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ff0033]"
-            />
-          </div>
-
-          {/* Submit */}
           <button
             type="submit"
             disabled={saveMutation.isPending}
-            className="bg-[#ff0033] text-white font-semibold px-6 py-2 rounded-full hover:bg-[#cc0029] disabled:opacity-50 transition-all"
+            style={{ background: saveMutation.isPending ? '#ccc' : '#ff0033', color: 'white', border: 'none', borderRadius: 3, padding: '10px 28px', fontSize: '0.85rem', fontWeight: 700, cursor: saveMutation.isPending ? 'not-allowed' : 'pointer' }}
           >
-            {saveMutation.isPending
-              ? 'Saving...'
-              : editingId
-              ? 'Update Category'
-              : 'Save Category'}
+            {saveMutation.isPending ? '保存中...' : editingId ? '更新する' : '保存する'}
           </button>
         </form>
       )}
 
       {/* Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-[#ff0033]/5">
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
-                Name
-              </th>
-
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
-                Slug
-              </th>
-
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
-                Actions
-              </th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-gray-100">
-            {data?.map((category: Category) => (
-              <tr
-                key={category.id}
-                className="hover:bg-[#ff0033]/5 transition-colors"
-              >
-                <td className="px-4 py-3 font-medium text-gray-800">
-                  {category.name}
-                </td>
-
-                <td className="px-4 py-3 text-gray-600">{category.slug}</td>
-
-                <td className="px-4 py-3">
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => handleEdit(category)}
-                      className="text-[#ff0033] hover:text-[#cc0029] text-sm font-medium"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (confirm('Delete this category?'))
-                          deleteMutation.mutate(category.id);
-                      }}
-                      className="text-red-400 hover:text-red-600 text-sm"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
+      {isLoading ? (
+        <div style={{ background: 'white', border: '1px solid #e0e0e0', borderRadius: 4, padding: '48px 0', textAlign: 'center' }}>
+          <p style={{ color: '#888', fontSize: '0.85rem' }}>読み込み中...</p>
+        </div>
+      ) : (
+        <div style={{ background: 'white', border: '1px solid #e0e0e0', borderRadius: 4, overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #ff0033' }}>
+                {['カテゴリ名', 'スラッグ', '操作'].map((h) => (
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: '0.72rem', fontWeight: 700, color: '#555' }}>{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {categories.map((category) => (
+                <tr key={category.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                  <td style={{ padding: '10px 14px', fontSize: '0.85rem', fontWeight: 600, color: '#222' }}>{category.name}</td>
+                  <td style={{ padding: '10px 14px', fontSize: '0.82rem', color: '#888' }}>{category.slug}</td>
+                  <td style={{ padding: '10px 14px' }}>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => handleEdit(category)} style={{ fontSize: '0.75rem', color: '#0075c2', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>編集</button>
+                      <button onClick={() => { if (confirm('このカテゴリを削除しますか？')) deleteMutation.mutate(category.id); }} style={{ fontSize: '0.75rem', color: '#e00', background: 'none', border: 'none', cursor: 'pointer' }}>削除</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {categories.length === 0 && (
+                <tr>
+                  <td colSpan={3} style={{ padding: '32px 0', textAlign: 'center', fontSize: '0.85rem', color: '#888' }}>カテゴリがありません</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

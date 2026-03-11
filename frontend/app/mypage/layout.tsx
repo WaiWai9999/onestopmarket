@@ -3,6 +3,10 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
+import TopBar from '@/components/layout/TopBar';
+import Ticker from '@/components/layout/Ticker';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import AccountSidebar from '@/components/layout/AccountSidebar';
 
 export default function MypageLayout({ children }: { children: React.ReactNode }) {
@@ -19,11 +23,21 @@ export default function MypageLayout({ children }: { children: React.ReactNode }
   if (!user) return null;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 flex gap-8 items-start">
-      <AccountSidebar />
-      <main className="flex-1 min-w-0">
-        {children}
-      </main>
-    </div>
+    <>
+      <TopBar />
+      <Ticker />
+      <Navbar />
+      <div style={{ background: '#f4f4f4', minHeight: 'calc(100vh - 160px)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 12px' }}>
+          <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+            <AccountSidebar />
+            <main style={{ flex: 1, minWidth: 0 }}>
+              {children}
+            </main>
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </>
   );
 }

@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/auth.store';
 import TopBar from '@/components/layout/TopBar';
 import Ticker from '@/components/layout/Ticker';
 import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 
 interface Product {
   id: string;
@@ -882,6 +883,7 @@ export default function FavoritesPage() {
       >
         {toast}
       </div>
+      <Footer />
     </>
   );
 }

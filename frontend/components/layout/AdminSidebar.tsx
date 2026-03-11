@@ -5,11 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 
 const navLinks = [
-  { label: 'ダッシュボード', href: '/admin' },
-  { label: 'カテゴリ管理', href: '/admin/categories' },
-  { label: '商品管理', href: '/admin/products' },
-  { label: '注文管理', href: '/admin/orders' },
-  { label: 'ユーザー管理', href: '/admin/users' },
+  { icon: '📊', label: 'ダッシュボード', href: '/admin' },
+  { icon: '📁', label: 'カテゴリ管理', href: '/admin/categories' },
+  { icon: '📦', label: '商品管理', href: '/admin/products' },
+  { icon: '🛍️', label: '注文管理', href: '/admin/orders' },
+  { icon: '👥', label: 'ユーザー管理', href: '/admin/users' },
 ];
 
 export default function AdminSidebar() {
@@ -23,41 +23,78 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className="w-52 flex-shrink-0">
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden sticky top-20">
-        <div className="bg-[#ff0033] px-4 py-3">
-          <p className="text-white font-semibold text-sm">管理パネル</p>
-        </div>
+    <aside style={{ width: 200, flexShrink: 0 }}>
+      <div style={{ background: 'white', border: '1px solid #e0e0e0', borderRadius: 4, overflow: 'hidden', position: 'sticky', top: 80 }}>
+        <nav style={{ padding: 6 }}>
+          {navLinks.map((link) => {
+            const active = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '9px 12px',
+                  borderRadius: 3,
+                  fontSize: '0.8rem',
+                  fontWeight: active ? 700 : 500,
+                  color: active ? '#ff0033' : '#444',
+                  background: active ? '#fff5f5' : 'transparent',
+                  textDecoration: 'none',
+                  transition: 'background 0.15s, color 0.15s',
+                  borderLeft: active ? '3px solid #ff0033' : '3px solid transparent',
+                }}
+              >
+                <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>{link.icon}</span>
+                {link.label}
+              </Link>
+            );
+          })}
 
-        <nav className="p-2">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                pathname === link.href
-                  ? 'bg-[#ff0033]/10 text-[#ff0033]'
-                  : 'text-gray-600 hover:bg-[#ff0033]/5 hover:text-[#ff0033]'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          <div style={{ height: 1, background: '#e8e8e8', margin: '6px 8px' }} />
 
-          <div className="border-t border-gray-100 mt-2 pt-2">
-            <Link
-              href="/"
-              className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-[#ff0033] transition-all"
-            >
-              ← ストアに戻る
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-all"
-            >
-              ログアウト
-            </button>
-          </div>
+          <Link
+            href="/"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 12px',
+              borderRadius: 3,
+              fontSize: '0.8rem',
+              fontWeight: 500,
+              color: '#888',
+              textDecoration: 'none',
+              borderLeft: '3px solid transparent',
+            }}
+          >
+            <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>🏪</span>
+            ストアに戻る
+          </Link>
+          <button
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              width: '100%',
+              padding: '9px 12px',
+              borderRadius: 3,
+              fontSize: '0.8rem',
+              fontWeight: 500,
+              color: '#999',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              textAlign: 'left',
+              borderLeft: '3px solid transparent',
+            }}
+          >
+            <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>🚪</span>
+            ログアウト
+          </button>
         </nav>
       </div>
     </aside>
