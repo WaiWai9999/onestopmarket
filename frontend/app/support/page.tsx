@@ -63,7 +63,7 @@ export default function SupportPage() {
   return (
     <>
       {/* Hero header */}
-      <div className="bg-[#1a6b1f] text-white px-6 py-12">
+      <div className="bg-[#ff0033] text-white px-6 py-12">
         <div className="max-w-4xl mx-auto">
           <p className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-2">ヘルプセンター</p>
           <h1 className="text-3xl md:text-4xl font-bold mb-3">カスタマーサポート</h1>
@@ -85,10 +85,10 @@ export default function SupportPage() {
             <a
               key={item.label}
               href={item.href}
-              className="bg-white border border-gray-200 rounded-2xl p-4 text-center hover:border-[#1a6b1f] hover:shadow-sm transition-all group"
+              className="bg-white border border-gray-200 rounded-2xl p-4 text-center hover:border-[#ff0033] hover:shadow-sm transition-all group"
             >
               <div className="text-2xl mb-1.5">{item.icon}</div>
-              <p className="text-sm font-semibold text-gray-700 group-hover:text-[#1a6b1f] transition-colors">{item.label}</p>
+              <p className="text-sm font-semibold text-gray-700 group-hover:text-[#ff0033] transition-colors">{item.label}</p>
             </a>
           ))}
         </div>
@@ -102,7 +102,7 @@ export default function SupportPage() {
               </h2>
               <div className="space-y-4">
                 {section.items.map((item) => (
-                  <div key={item.q} className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-[#1a6b1f]/30 transition-colors">
+                  <div key={item.q} className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-[#ff0033]/30 transition-colors">
                     <p className="font-semibold text-gray-900 text-sm mb-2">{item.q}</p>
                     <p className="text-gray-500 text-sm leading-relaxed">{item.a}</p>
                   </div>
@@ -113,7 +113,7 @@ export default function SupportPage() {
         </div>
 
         {/* Contact CTA */}
-        <div className="mt-14 bg-[#1a6b1f] rounded-2xl px-8 py-10 text-center text-white">
+        <div className="mt-14 bg-[#ff0033] rounded-2xl px-8 py-10 text-center text-white">
           <h2 className="text-xl font-bold mb-2">まだお困りですか？</h2>
           <p className="text-white/70 text-sm mb-6 max-w-sm mx-auto">
             お探しの情報が見つからない場合は、注文履歴をご確認いただくか、商品ページをご覧ください。
@@ -121,7 +121,7 @@ export default function SupportPage() {
           <div className="flex gap-3 justify-center flex-wrap">
             <Link
               href="/mypage/orders"
-              className="bg-white hover:bg-gray-50 text-[#1a6b1f] font-semibold px-6 py-3 rounded-xl text-sm transition-colors"
+              className="bg-white hover:bg-gray-50 text-[#ff0033] font-semibold px-6 py-3 rounded-xl text-sm transition-colors"
             >
               注文履歴を見る
             </Link>

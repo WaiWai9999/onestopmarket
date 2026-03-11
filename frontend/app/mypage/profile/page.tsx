@@ -77,7 +77,7 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1a6b1f] focus:border-transparent';
+  const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#ff0033] focus:border-transparent';
 
   return (
     <div>
@@ -86,7 +86,7 @@ export default function ProfilePage() {
         {profile?.role && (
           <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
             profile.role === 'ADMIN'
-              ? 'bg-[#1a6b1f]/10 text-[#1a6b1f] border-[#1a6b1f]/20'
+              ? 'bg-[#ff0033]/10 text-[#ff0033] border-[#ff0033]/20'
               : 'bg-gray-100 text-gray-600 border-gray-200'
           }`}>
             {profile.role}
@@ -118,14 +118,14 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={updateMutation.isPending}
-            className="w-full bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
+            className="w-full bg-[#ff0033] hover:bg-[#cc0029] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
           >
             {updateMutation.isPending ? '保存中...' : '変更を保存'}
           </button>
         </form>
 
         <div className="mt-5 pt-5 border-t border-gray-100">
-          <Link href="/mypage/password" className="text-sm text-[#1a6b1f] hover:text-[#155318] font-medium transition-colors">
+          <Link href="/mypage/password" className="text-sm text-[#ff0033] hover:text-[#cc0029] font-medium transition-colors">
             パスワード変更 →
           </Link>
         </div>

@@ -63,7 +63,7 @@ export default function AdminOrdersPage() {
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (
-            <div key={order.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-amber-300 transition-all">
+            <div key={order.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-[#ff0033] transition-all">
               {/* Header row */}
               <div className="flex items-start justify-between mb-3">
                 <div>
@@ -87,7 +87,7 @@ export default function AdminOrdersPage() {
                   <select
                     value={order.status}
                     onChange={(e) => statusMutation.mutate({ id: order.id, status: e.target.value })}
-                    className="border border-gray-200 rounded-lg px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
+                    className="border border-gray-200 rounded-lg px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ff0033] cursor-pointer"
                   >
                     {allStatuses.map((s) => (
                       <option key={s} value={s}>{s}</option>

@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MallShop (モールショップ) — Frontend
+
+A Japanese-style online shopping mall built with Next.js.
+
+**Live Demo:** [https://mallshop-8yc7f8h5b-zinwaiwainwe9999-8293s-projects.vercel.app/](https://mallshop-8yc7f8h5b-zinwaiwainwe9999-8293s-projects.vercel.app/)
+
+## Tech Stack
+
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript
+- **State Management:** Zustand (auth), React Query (server state)
+- **Styling:** Tailwind CSS
+- **Payments:** Stripe
+- **Backend:** NestJS + Prisma + PostgreSQL (see `../backend`)
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Home page |
+| `/products` | Product listing with filters and pagination |
+| `/products/[id]` | Product detail with reviews, Q&A, and related products |
+| `/hot-deals` | Sale/hot deals page with countdown timers and coupons |
+| `/cart` | Shopping cart with coupons, points, and save-for-later |
+| `/checkout` | Multi-step checkout (address, delivery, payment, confirm) |
+| `/checkout/complete` | Order completion page |
+| `/favorites` | Favorites/wishlist with folders, tags, and grid/list views |
+| `/login` | Login |
+| `/register` | Registration |
+| `/mypage/profile` | User profile |
+| `/mypage/orders` | Order history |
+| `/mypage/password` | Password change |
+| `/admin` | Admin dashboard |
+| `/admin/products` | Product management |
+| `/admin/categories` | Category management |
+| `/admin/orders` | Order management |
+| `/admin/users` | User management |
+| `/about` | About page |
+| `/support` | Support/FAQ page |
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Set environment variables
+cp .env.example .env.local
+# Edit .env.local with your API URL
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_API_URL` | Backend API base URL | `/api` |
 
-## Learn More
+## Build
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+npm run start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deployed on [Vercel](https://vercel.com). Push to `main` to trigger auto-deploy.

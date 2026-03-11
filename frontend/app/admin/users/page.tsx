@@ -49,7 +49,7 @@ export default function AdminUsersPage() {
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="bg-gradient-to-r from-orange-100 to-teal-100">
+            <tr className="bg-[#ff0033]/5">
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Phone</th>
@@ -59,7 +59,7 @@ export default function AdminUsersPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {users?.map((u) => (
-              <tr key={u.id} className="hover:bg-orange-50 transition-colors">
+              <tr key={u.id} className="hover:bg-[#ff0033]/5 transition-colors">
                 <td className="px-4 py-3">
                   <p className="font-medium text-gray-800">{u.name}</p>
                   {u.address && <p className="text-xs text-gray-400 truncate max-w-[140px]">{u.address}</p>}
@@ -71,7 +71,7 @@ export default function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-3">
                   {u.id === user?.id ? (
-                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#ff0033]/10 text-[#ff0033]">
                       {u.role} (you)
                     </span>
                   ) : (
@@ -80,9 +80,9 @@ export default function AdminUsersPage() {
                       onChange={(e) =>
                         roleMutation.mutate({ id: u.id, role: e.target.value as 'CUSTOMER' | 'ADMIN' })
                       }
-                      className={`border rounded-lg px-2 py-1 text-xs font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                      className={`border rounded-lg px-2 py-1 text-xs font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff0033] ${
                         u.role === 'ADMIN'
-                          ? 'border-amber-300 bg-amber-50 text-amber-700'
+                          ? 'border-[#ff0033] bg-[#ff0033]/10 text-[#ff0033]'
                           : 'border-gray-200 text-gray-700'
                       }`}
                     >

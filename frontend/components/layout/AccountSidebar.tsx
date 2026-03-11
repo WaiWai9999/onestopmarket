@@ -32,9 +32,9 @@ export default function AccountSidebar() {
     <aside className="w-48 flex-shrink-0">
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden sticky top-24">
         {/* Header */}
-        <div className="bg-[#1a6b1f] text-white p-6 px-4 py-4">
+        <div className="bg-[#ff0033] text-white p-6 px-4 py-4">
           <p className="text-white font-semibold text-sm truncate">{user?.name ?? 'アカウント'}</p>
-          <p className="text-gray-400 text-xs mt-0.5 truncate">{user?.email}</p>
+          <p className="text-white/70 text-xs mt-0.5 truncate">{user?.email}</p>
           {isAdmin && (
             <span className="inline-block mt-1.5 text-xs font-semibold text-white bg-white/20 px-2 py-0.5 rounded-full">
               管理者
@@ -50,7 +50,7 @@ export default function AccountSidebar() {
               href={link.href}
               className={`flex items-center px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 pathname === link.href
-                  ? 'bg-[#1a6b1f] text-white'
+                  ? 'bg-[#ff0033] text-white'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
@@ -68,7 +68,7 @@ export default function AccountSidebar() {
                   href={link.href}
                   className={`flex items-center px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                     pathname === link.href
-                      ? 'bg-[#1a6b1f] text-white'
+                      ? 'bg-[#ff0033] text-white'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   }`}
                 >

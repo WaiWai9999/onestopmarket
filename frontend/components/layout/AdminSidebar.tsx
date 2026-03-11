@@ -25,7 +25,7 @@ export default function AdminSidebar() {
   return (
     <aside className="w-52 flex-shrink-0">
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden sticky top-20">
-        <div className="bg-[#1a6b1f] px-4 py-3">
+        <div className="bg-[#ff0033] px-4 py-3">
           <p className="text-white font-semibold text-sm">管理パネル</p>
         </div>
 
@@ -36,8 +36,8 @@ export default function AdminSidebar() {
               href={link.href}
               className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 pathname === link.href
-                  ? 'bg-[#1a6b1f]/10 text-[#1a6b1f]'
-                  : 'text-gray-600 hover:bg-[#1a6b1f]/5 hover:text-[#1a6b1f]'
+                  ? 'bg-[#ff0033]/10 text-[#ff0033]'
+                  : 'text-gray-600 hover:bg-[#ff0033]/5 hover:text-[#ff0033]'
               }`}
             >
               {link.label}
@@ -47,7 +47,7 @@ export default function AdminSidebar() {
           <div className="border-t border-gray-100 mt-2 pt-2">
             <Link
               href="/"
-              className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-[#1a6b1f] transition-all"
+              className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-[#ff0033] transition-all"
             >
               ← ストアに戻る
             </Link>

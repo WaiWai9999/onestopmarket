@@ -1,5 +1,11 @@
-import { IsOptional, IsString, IsInt, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsOptional,
+  IsString,
+  IsInt,
+  IsBoolean,
+  Min,
+} from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class QueryProductDto {
   @IsOptional()
@@ -9,6 +15,23 @@ export class QueryProductDto {
   @IsOptional()
   @IsString()
   categoryId?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  minPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  maxPrice?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  onSale?: boolean;
 
   @IsOptional()
   @Type(() => Number)

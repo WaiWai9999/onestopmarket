@@ -44,8 +44,8 @@ export default function LoginPage() {
   return (
     <main className="min-h-[calc(100vh-64px)] grid md:grid-cols-2">
       {/* Left: brand panel */}
-      <div className="hidden md:flex flex-col justify-center bg-[#1a6b1f] text-white p-6 px-12 text-white">
-        <span className="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-4">OneStopMarket</span>
+      <div className="hidden md:flex flex-col justify-center bg-[#ff0033] text-white p-6 px-12 text-white">
+        <span className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-4">OneStopMarket</span>
         <h2 className="text-3xl font-bold leading-snug mb-3">
           Welcome back.<br />Good to see you.
         </h2>
@@ -60,7 +60,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Log in</h1>
           <p className="text-sm text-gray-500 mb-7">
             No account?{' '}
-            <Link href="/register" className="text-orange-500 hover:text-orange-600 font-medium">
+            <Link href="/register" className="text-[#ff0033] hover:text-[#cc0029] font-medium">
               Sign up free
             </Link>
           </p>
@@ -82,7 +82,7 @@ export default function LoginPage() {
                 required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#ff0033] focus:border-transparent"
               />
             </div>
             <div>
@@ -92,13 +92,13 @@ export default function LoginPage() {
                 required
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#ff0033] focus:border-transparent"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
+              className="w-full bg-[#ff0033] hover:bg-[#cc0029] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
             >
               {loading ? 'Logging in...' : 'Log in'}
             </button>

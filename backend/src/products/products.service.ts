@@ -9,29 +9,55 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: QueryProductDto) {
-    const { search, categoryId, page = 1, limit = 12 } = query;
+    const { search, categoryId, minPrice, maxPrice, onSale, page = 1, limit = 12 } = query;
     const skip = (page - 1) * limit;
 
-    const where = {
-      deletedAt: null, // exclude soft-deleted products
-      ...(categoryId && { categoryId }),
-      ...(search && {
+    // Use AND array to combine multiple OR conditions safely
+    const andConditions: Record<string, unknown>[] = [];
+
+    if (search) {
+      andConditions.push({
         OR: [
           { name: { contains: search, mode: 'insensitive' as const } },
           { description: { contains: search, mode: 'insensitive' as const } },
         ],
-      }),
+      });
+    }
+
+    if (minPrice !== undefined) {
+      andConditions.push({
+        OR: [
+          { AND: [{ discountPrice: { not: null } }, { discountPrice: { gte: minPrice } }] },
+          { AND: [{ discountPrice: null }, { price: { gte: minPrice } }] },
+        ],
+      });
+    }
+
+    if (maxPrice !== undefined) {
+      andConditions.push({
+        OR: [
+          { AND: [{ discountPrice: { not: null } }, { discountPrice: { lte: maxPrice } }] },
+          { AND: [{ discountPrice: null }, { price: { lte: maxPrice } }] },
+        ],
+      });
+    }
+
+    const finalWhere = {
+      deletedAt: null,
+      ...(categoryId && { categoryId }),
+      ...(onSale && { discountPrice: { not: null } }),
+      ...(andConditions.length > 0 && { AND: andConditions }),
     };
 
     const [products, total] = await this.prisma.$transaction([
       this.prisma.product.findMany({
-        where,
+        where: finalWhere,
         skip,
         take: limit,
         include: { category: true },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.product.count({ where }),
+      this.prisma.product.count({ where: finalWhere }),
     ]);
 
     return {

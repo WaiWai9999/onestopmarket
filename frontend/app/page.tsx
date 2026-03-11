@@ -2,10 +2,15 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect, useCallback } from 'react';
-import api from '@/lib/axios';
 import { useAuthStore } from '@/store/auth.store';
+import api from '@/lib/axios';
+import TopBar from '@/components/layout/TopBar';
+import Ticker from '@/components/layout/Ticker';
+import Navbar from '@/components/layout/Navbar';
+
+// ── Types ──
 
 interface Category {
   id: string;
@@ -16,287 +21,709 @@ interface Category {
 interface Product {
   id: string;
   name: string;
+  description: string;
   price: number;
+  discountPrice: number | null;
+  discountPercent: number | null;
+  isHotDeal: boolean;
   imageUrl: string | null;
-  category: { name: string };
+  stock: number;
+  category: { id: string; name: string };
 }
 
-interface Slide {
-  bg: string;
-  badge: string;
-  title: string;
-  desc: string;
-  cta: { label: string; href: string };
-  secondary?: { label: string; href: string };
-  features: { icon: string; text: string }[];
+interface ProductsResponse {
+  data: Product[];
+  meta: { total: number; page: number; totalPages: number };
 }
+
+// ── Static data (no backend model) ──
+
+const categoryIconMap: Record<string, string> = {
+  'ファッション': '👗',
+  'スマホ・タブレット': '📱',
+  '家電・PC': '💻',
+  '食品・飲料': '🍎',
+  'スポーツ': '🏋️',
+  'インテリア': '🛋️',
+  '美容・健康': '💄',
+  '本・CD': '📚',
+  'おもちゃ': '🧸',
+  '車・バイク': '🚗',
+  'キッチン・日用品': '🍳',
+  'スポーツ・アウトドア': '🏕️',
+  '本・CD・ゲーム': '🎮',
+  'インテリア・家具': '🛋️',
+};
+
+const sidebarCategoryNames = [
+  'ファッション', 'スマホ・タブレット', '家電・PC', '食品・飲料', 'スポーツ',
+  'インテリア', '美容・健康', '本・CD', 'おもちゃ', '車・バイク',
+];
+
+const navCategoryIcons = [
+  { name: 'ファッション', icon: '👗', sale: false },
+  { name: 'スマホ', icon: '📱', sale: false },
+  { name: 'PC・家電', icon: '💻', sale: false },
+  { name: '食品', icon: '🍎', sale: false },
+  { name: 'スポーツ', icon: '🏋️', sale: false },
+  { name: 'インテリア', icon: '🛋️', sale: false },
+  { name: '美容', icon: '💄', sale: false },
+  { name: '本・CD', icon: '📚', sale: false },
+  { name: 'おもちゃ', icon: '🧸', sale: false },
+  { name: 'セール', icon: '🔥', sale: true },
+];
+
+const coupons = [
+  { value: '300', unit: '円OFF', desc: '3,000円以上で使える', expires: '〜7月31日まで' },
+  { value: '10', unit: '%OFF', desc: 'ファッション限定', expires: '〜7月25日まで' },
+  { value: '500', unit: '円OFF', desc: '初回購入限定', expires: '〜8月10日まで' },
+  { value: 'P5', unit: '倍', desc: 'ポイント5倍デー', expires: '本日のみ！' },
+];
+
+const footerLinks = [
+  { title: 'ショッピング', links: ['商品を探す', 'ランキング', 'セール・特集', 'クーポン'] },
+  { title: '会員サービス', links: ['会員登録（無料）', 'ログイン', 'ポイント確認', 'プレミアム会員'] },
+  { title: '注文・配送', links: ['注文履歴', '配送状況確認', '返品・交換', 'お支払い方法'] },
+  { title: 'サポート', links: ['よくある質問', 'お問い合わせ', 'ストア出店', 'プレスリリース'] },
+];
+
+const footerBottom = ['利用規約', 'プライバシーポリシー', '特定商取引法に基づく表記', '会社概要', 'サイトマップ'];
+
+const miniBanners = [
+  { bg: 'linear-gradient(135deg, #0075c2, #0099ff)', icon: '🚚', label: '今なら', title: '送料無料', sub: '3,000円以上' },
+  { bg: 'linear-gradient(135deg, #cc6600, #ff9500)', icon: '⭐', label: '期間限定', title: 'ポイント', sub: '最大10倍！' },
+  { bg: 'linear-gradient(135deg, #2d8a4e, #4caf50)', icon: '🎁', label: '新規登録', title: '500pt', sub: 'プレゼント' },
+];
+
+// ── Helpers ──
+
+function getRankColor(rank: number) {
+  if (rank === 1) return '#c8941e';
+  if (rank === 2) return '#888888';
+  if (rank === 3) return '#b87333';
+  return '#aaaaaa';
+}
+
+function formatPrice(price: number) {
+  return `¥${price.toLocaleString()}`;
+}
+
+function calcDiscount(product: Product): { displayPrice: number; oldPrice: number | null; discountLabel: string | null } {
+  if (product.discountPercent && product.discountPercent > 0) {
+    const discounted = product.discountPrice ?? Math.round(product.price * (1 - product.discountPercent / 100));
+    return {
+      displayPrice: discounted,
+      oldPrice: product.price,
+      discountLabel: `${product.discountPercent}%OFF`,
+    };
+  }
+  if (product.discountPrice && product.discountPrice < product.price) {
+    const pct = Math.round((1 - product.discountPrice / product.price) * 100);
+    return {
+      displayPrice: product.discountPrice,
+      oldPrice: product.price,
+      discountLabel: `${pct}%OFF`,
+    };
+  }
+  return { displayPrice: product.price, oldPrice: null, discountLabel: null };
+}
+
+function getCategoryId(categories: Category[] | undefined, name: string): string {
+  const cat = categories?.find((c) => c.name === name || c.name.includes(name) || name.includes(c.name));
+  return cat?.id ?? '';
+}
+
+// ── Component ──
 
 export default function Home() {
   const { user, _hasHydrated } = useAuthStore();
+  const [productTab, setProductTab] = useState<'recommend' | 'new' | 'sale'>('recommend');
+  const [rankingTab, setRankingTab] = useState('総合');
+  const [couponStates, setCouponStates] = useState<boolean[]>(new Array(coupons.length).fill(false));
 
+  // Fetch categories
   const { data: categories } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: () => api.get('/categories').then((r) => r.data),
   });
 
-  const { data: productsData } = useQuery({
-    queryKey: ['featured-products'],
-    queryFn: () => api.get('/products', { params: { limit: 8 } }).then((r) => r.data),
+  // Fetch products for main grid (larger set)
+  const { data: productsRes } = useQuery<ProductsResponse>({
+    queryKey: ['products', 'home'],
+    queryFn: () => api.get('/products', { params: { limit: 25 } }).then((r) => r.data),
   });
 
-  const slides: Slide[] = [
-    {
-      bg: 'from-[#1a6b1f] to-[#155318]',
-      badge: 'OneStopMarket',
-      title: '必要なものが、\nすべてここに。',
-      desc: '幅広いカテゴリの商品を、シンプルな操作で。今すぐ探して、カートに追加しよう。',
-      cta: { label: '商品を探す', href: '/products' },
-      secondary: _hasHydrated && !user ? { label: '無料で登録', href: '/register' } : undefined,
-      features: [
-        { icon: '🚚', text: '送料無料' },
-        { icon: '🔒', text: '安全決済' },
-        { icon: '📦', text: '豊富な品揃え' },
-        { icon: '👤', text: '会員特典' },
-      ],
-    },
-    {
-      bg: 'from-[#0f4a2e] to-[#1a6b1f]',
-      badge: 'SALE',
-      title: '期間限定セール\n開催中！',
-      desc: '人気商品が特別価格で登場。お見逃しなく！',
-      cta: { label: 'セール商品を見る', href: '/hot-deals' },
-      features: [
-        { icon: '🔥', text: '最大50%OFF' },
-        { icon: '⏰', text: '期間限定' },
-        { icon: '🎁', text: 'お得なセット' },
-      ],
-    },
-    {
-      bg: 'from-[#1a6b1f] to-[#2d8a33]',
-      badge: 'NEW ARRIVAL',
-      title: '新商品、\n続々入荷中。',
-      desc: '最新アイテムをいち早くチェック。トレンドを見逃さない。',
-      cta: { label: '新着を見る', href: '/products' },
-      features: [
-        { icon: '✨', text: '毎日更新' },
-        { icon: '🏷️', text: '厳選アイテム' },
-        { icon: '💎', text: '高品質' },
-      ],
-    },
-    ...(_hasHydrated && !user
-      ? [
-          {
-            bg: 'from-[#155318] to-[#1a6b1f]',
-            badge: 'MEMBERS',
-            title: '会員登録で、\nもっと便利に。',
-            desc: '注文履歴の管理、かんたん再注文、会員限定特典が使えます。',
-            cta: { label: '無料で登録する', href: '/register' },
-            features: [
-              { icon: '📋', text: '注文履歴' },
-              { icon: '🔄', text: 'かんたん再注文' },
-              { icon: '🎉', text: '会員限定特典' },
-            ],
-          } as Slide,
-        ]
-      : []),
-  ];
+  // Fetch hot deals
+  const { data: hotDeals } = useQuery<Product[]>({
+    queryKey: ['hot-deals'],
+    queryFn: () => api.get('/products/hot-deals').then((r) => r.data),
+  });
 
-  const [current, setCurrent] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const allProducts = productsRes?.data ?? [];
 
-  const next = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % slides.length);
-  }, [slides.length]);
+  // Products for the grid (first 10)
+  const gridProducts = allProducts.slice(0, 10);
 
-  const prev = useCallback(() => {
-    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
-  }, [slides.length]);
+  // Products for ranking (top 6 — cheapest with discounts first as "best sellers")
+  const rankingProducts = [...allProducts]
+    .sort((a, b) => {
+      const aDiscount = a.discountPercent ?? 0;
+      const bDiscount = b.discountPercent ?? 0;
+      return bDiscount - aDiscount || a.price - b.price;
+    })
+    .slice(0, 6);
 
-  useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(next, 5000);
-    return () => clearInterval(timer);
-  }, [isPaused, next]);
+  // Sidebar ranking (top 5 by price ascending — "popular affordable items")
+  const sideRanking = [...allProducts]
+    .sort((a, b) => a.price - b.price)
+    .slice(0, 5);
 
-  const slide = slides[current];
+  // Browsing history — use last 8 products
+  const historyProducts = allProducts.slice(0, 8);
+
+  // Filter sidebar categories to only those that exist in DB
+  const sideCategories = sidebarCategoryNames
+    .map((name) => {
+      const cat = categories?.find((c) => c.name === name);
+      return cat ? { ...cat, icon: categoryIconMap[name] || '📦' } : null;
+    })
+    .filter(Boolean) as (Category & { icon: string })[];
+
+  const handleCouponGet = (i: number) => {
+    setCouponStates((prev) => { const n = [...prev]; n[i] = true; return n; });
+  };
 
   return (
-    <>
-      {/* ─── Hero Carousel ─── */}
-      <section
-        className="relative overflow-hidden"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
+    <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
+      <TopBar />
+      <Ticker />
+      <Navbar />
+
+      {/* Notice bar */}
+      <div
+        className="text-center"
+        style={{
+          background: '#fff9e6',
+          borderBottom: '1px solid #f5c842',
+          padding: '6px 12px',
+          fontSize: '0.78rem',
+          color: '#664d00',
+        }}
       >
-        <div className={`bg-gradient-to-br ${slide.bg} text-white transition-all duration-700`}>
-          <div className="max-w-6xl mx-auto px-6 py-14 md:py-20">
-            <div className="grid md:grid-cols-2 gap-10 items-center">
-              {/* Content */}
-              <div key={current} className="animate-fadeIn">
-                <span className="inline-block text-xs font-semibold text-white bg-white/15 px-3 py-1 rounded-full mb-4 tracking-wider uppercase">
-                  {slide.badge}
-                </span>
-                <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-4 whitespace-pre-line">
-                  {slide.title}
-                </h1>
-                <p className="text-white/80 text-base md:text-lg mb-8 max-w-md leading-relaxed">
-                  {slide.desc}
-                </p>
-                <div className="flex gap-3 flex-wrap">
-                  <Link
-                    href={slide.cta.href}
-                    className="bg-white hover:bg-gray-100 text-[#1a6b1f] font-semibold px-7 py-3 rounded-full text-sm transition-colors shadow-lg"
-                  >
-                    {slide.cta.label}
-                  </Link>
-                  {slide.secondary && (
-                    <Link
-                      href={slide.secondary.href}
-                      className="border border-white/40 hover:bg-white/10 text-white font-semibold px-7 py-3 rounded-full text-sm transition-colors"
-                    >
-                      {slide.secondary.label}
-                    </Link>
-                  )}
-                </div>
-              </div>
+        🔔 本日のおすすめ：夏のビッグセール開催中！人気商品が最大70%OFF。
+        <Link href="/hot-deals" className="ml-2 font-bold" style={{ color: 'var(--color-primary)' }}>
+          詳細はこちら →
+        </Link>
+      </div>
 
-              {/* Feature pills */}
-              <div key={`features-${current}`} className="hidden md:flex flex-wrap gap-3 justify-center animate-fadeIn">
-                {slide.features.map((f) => (
-                  <div
-                    key={f.text}
-                    className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-5 py-4 text-center min-w-[120px]"
-                  >
-                    <div className="text-2xl mb-1.5">{f.icon}</div>
-                    <p className="text-white font-medium text-sm">{f.text}</p>
-                  </div>
-                ))}
+      {/* Main grid */}
+      <div className="mx-auto grid gap-3" style={{ maxWidth: 1200, padding: 12, gridTemplateColumns: '200px 1fr' }}>
+
+        {/* ── Sidebar ── */}
+        <aside className="flex flex-col gap-[10px]">
+          {/* Points box */}
+          <SidebarBox>
+            <div className="p-4 text-center">
+              <div className="font-bold" style={{ fontSize: '1.6rem', color: 'var(--color-primary)' }}>
+                1,250<span style={{ fontSize: '0.85rem' }}>pt</span>
               </div>
+              <div className="mb-2" style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                {_hasHydrated && user ? `${user.name} さんの保有ポイント` : 'ゲスト さんの保有ポイント'}
+              </div>
+              <Link
+                href="/mypage/profile"
+                className="block rounded-[3px] text-center font-bold text-white"
+                style={{ background: 'var(--color-primary)', padding: 7, fontSize: '0.78rem' }}
+              >
+                ポイントを使う
+              </Link>
             </div>
+          </SidebarBox>
 
-            {/* Carousel controls */}
-            <div className="flex items-center justify-between mt-8">
-              {/* Dots */}
-              <div className="flex gap-2">
-                {slides.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrent(i)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      i === current ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/60'
-                    }`}
-                  />
-                ))}
-              </div>
+          {/* Categories */}
+          <SidebarBox>
+            <div className="font-bold" style={{ background: 'var(--color-border-inner)', padding: '8px 12px', fontSize: '0.82rem' }}>
+              カテゴリ一覧
+            </div>
+            {sideCategories.map((cat, i) => (
+              <Link
+                key={cat.id}
+                href={`/products?categoryId=${cat.id}`}
+                className="flex items-center gap-2 transition-colors duration-[120ms] hover:bg-[var(--color-hover-red-bg)] hover:text-[var(--color-primary)]"
+                style={{
+                  padding: '7px 12px',
+                  fontSize: '0.8rem',
+                  color: 'var(--color-text)',
+                  borderBottom: i < sideCategories.length - 1 ? '1px solid var(--color-border-inner)' : 'none',
+                }}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.name}</span>
+                <span className="ml-auto" style={{ color: '#ccc', fontSize: '0.7rem' }}>›</span>
+              </Link>
+            ))}
+            <Link
+              href="/products"
+              className="block font-bold"
+              style={{ padding: '7px 12px', fontSize: '0.78rem', color: 'var(--color-primary)' }}
+            >
+              ▼ すべて見る
+            </Link>
+          </SidebarBox>
 
-              {/* Arrows */}
-              <div className="flex gap-2">
-                <button
-                  onClick={prev}
-                  className="w-9 h-9 rounded-full border border-white/30 hover:bg-white/10 flex items-center justify-center text-white transition-colors text-sm"
-                >
-                  &lt;
-                </button>
-                <button
-                  onClick={next}
-                  className="w-9 h-9 rounded-full border border-white/30 hover:bg-white/10 flex items-center justify-center text-white transition-colors text-sm"
-                >
-                  &gt;
-                </button>
+          {/* Side ranking */}
+          <SidebarBox>
+            <div className="font-bold" style={{ background: 'var(--color-border-inner)', padding: '8px 12px', fontSize: '0.82rem' }}>
+              🏆 売上ランキング
+            </div>
+            {sideRanking.map((item, i) => (
+              <Link
+                key={item.id}
+                href={`/products/${item.id}`}
+                className="flex items-center gap-2 transition-colors duration-[120ms] hover:bg-[var(--color-hover-red-bg)]"
+                style={{
+                  padding: '7px 12px',
+                  fontSize: '0.78rem',
+                  borderBottom: i < sideRanking.length - 1 ? '1px solid var(--color-border-inner)' : 'none',
+                }}
+              >
+                <span className="min-w-[20px] font-bold" style={{ color: getRankColor(i + 1) }}>{i + 1}位</span>
+                <span className="flex-1 truncate">{item.name}</span>
+                <span className="shrink-0 font-bold" style={{ color: 'var(--color-price)', fontSize: '0.72rem' }}>
+                  {formatPrice(calcDiscount(item).displayPrice)}
+                </span>
+              </Link>
+            ))}
+          </SidebarBox>
+
+          {/* Premium banner */}
+          <SidebarBox>
+            <div className="p-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #0075c2, #00b4d8)' }}>
+              <div className="mb-1.5 inline-block rounded-[10px] px-2 py-[2px]" style={{ fontSize: '0.62rem', background: 'rgba(255,255,255,0.2)' }}>
+                会員限定
               </div>
+              <div className="mb-1 font-bold" style={{ fontSize: '1rem' }}>プレミアム会員</div>
+              <div className="mb-2.5" style={{ fontSize: '0.68rem', opacity: 0.9 }}>ポイント2倍・送料無料・先行セール</div>
+              <Link
+                href="/mypage/profile"
+                className="inline-block rounded-[20px] font-bold"
+                style={{ background: 'white', color: '#0075c2', padding: '6px 16px', fontSize: '0.72rem' }}
+              >
+                詳細を見る
+              </Link>
+            </div>
+          </SidebarBox>
+        </aside>
+
+        {/* ── Main content ── */}
+        <main className="flex flex-col gap-3">
+          {/* Hero banner */}
+          <div
+            className="relative overflow-hidden rounded-[6px] text-white"
+            style={{
+              height: 200,
+              background: 'linear-gradient(135deg, #ff0033 0%, #ff6b35 50%, #ff9a00 100%)',
+              padding: '28px 32px',
+            }}
+          >
+            <span className="pointer-events-none absolute" style={{ right: -30, top: -40, fontSize: '13rem', opacity: 0.07 }}>🛍</span>
+            <span
+              className="mb-2 inline-block rounded-[20px] font-bold"
+              style={{ background: 'rgba(255,255,255,0.2)', padding: '3px 10px', fontSize: '0.72rem' }}
+            >
+              期間限定 〜7/31まで
+            </span>
+            <h1 className="mb-1.5" style={{ fontSize: '1.8rem', fontWeight: 700, lineHeight: 1.2 }}>
+              夏のビッグセール<br />開催中！
+            </h1>
+            <p className="mb-3.5" style={{ fontSize: '0.85rem', opacity: 0.88 }}>
+              人気商品が最大70%OFF・ポイント5倍
+            </p>
+            <Link
+              href="/hot-deals"
+              className="inline-block rounded-[20px] font-bold transition-[transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
+              style={{ background: 'white', color: 'var(--color-primary)', padding: '8px 20px', fontSize: '0.82rem' }}
+            >
+              セール会場へ →
+            </Link>
+            <div
+              className="absolute text-center"
+              style={{
+                right: 32, bottom: 24,
+                background: 'white', color: 'var(--color-primary)',
+                padding: '10px 16px', borderRadius: 6,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+              }}
+            >
+              <div style={{ fontSize: '0.68rem' }}>最大</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, lineHeight: 1 }}>70%</div>
+              <div style={{ fontSize: '0.68rem', fontWeight: 700 }}>OFF</div>
+              <div style={{ fontSize: '0.55rem', color: 'var(--color-text-muted)' }}>対象商品限定</div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <div className="max-w-6xl mx-auto px-6">
-
-        {/* ─── Category Nav (SCR-01 / SCR-02) ─── */}
-        {categories && categories.length > 0 && (
-          <section className="mt-12">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-gray-900">カテゴリから探す</h2>
-              <Link href="/products" className="text-sm text-[#1a6b1f] hover:text-[#155318] font-medium transition-colors">
-                すべて見る →
-              </Link>
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/products?categoryId=${cat.id}`}
-                  className="group flex flex-col items-center gap-2 p-3 bg-white border border-gray-200 rounded-xl hover:border-[#1a6b1f] hover:shadow-sm transition-all text-center"
-                >
-                  <div className="w-10 h-10 bg-[#1a6b1f]/10 group-hover:bg-[#1a6b1f] rounded-full flex items-center justify-center text-[#1a6b1f] group-hover:text-white font-bold text-sm transition-all">
-                    {cat.name[0].toUpperCase()}
-                  </div>
-                  <p className="text-xs font-medium text-gray-600 group-hover:text-[#1a6b1f] leading-tight">{cat.name}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ─── Featured Products (SCR-01 / SCR-02 entry) ─── */}
-        {productsData?.data && productsData.data.length > 0 && (
-          <section className="mt-12 mb-12">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-gray-900">新着・おすすめ商品</h2>
-              <Link
-                href="/products"
-                className="bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold px-5 py-2 rounded-full text-sm transition-colors"
+          {/* Mini banners */}
+          <div className="grid grid-cols-3 gap-2">
+            {miniBanners.map((b) => (
+              <div
+                key={b.title}
+                className="flex cursor-pointer items-center gap-2.5 rounded-[5px] text-white transition-opacity duration-150 hover:opacity-88"
+                style={{ background: b.bg, padding: '14px 16px' }}
               >
-                すべて見る
-              </Link>
+                <span style={{ fontSize: '2rem' }}>{b.icon}</span>
+                <div>
+                  <div style={{ fontSize: '0.62rem', opacity: 0.9 }}>{b.label}</div>
+                  <div className="font-bold" style={{ fontSize: '0.95rem' }}>{b.title}</div>
+                  <div style={{ fontSize: '0.72rem', opacity: 0.9 }}>{b.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Category icons */}
+          <SectionBox>
+            <SectionHeader icon="📂" title="ジャンルから探す" linkText="すべてのカテゴリ ›" linkHref="/products" />
+            <div className="grid grid-cols-10 grid-separator">
+              {navCategoryIcons.map((cat) => {
+                const catId = getCategoryId(categories, cat.name);
+                const href = cat.sale ? '/hot-deals' : catId ? `/products?categoryId=${catId}` : '/products';
+                return (
+                  <Link
+                    key={cat.name}
+                    href={href}
+                    className="text-center transition-colors duration-[120ms] hover:bg-[var(--color-hover-red-bg)]"
+                    style={{ background: cat.sale ? '#fff0f0' : 'white', padding: '14px 6px' }}
+                  >
+                    <div className="mb-1" style={{ fontSize: '1.6rem' }}>{cat.icon}</div>
+                    <div style={{ fontSize: '0.68rem', color: cat.sale ? 'var(--color-primary)' : 'var(--color-text-mid)' }}>{cat.name}</div>
+                  </Link>
+                );
+              })}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {productsData.data.map((product: Product) => (
-                <Link
-                  key={product.id}
-                  href={`/products/${product.id}`}
-                  className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md hover:border-[#1a6b1f] transition-all"
+          </SectionBox>
+
+          {/* Product grid */}
+          <SectionBox>
+            <SectionHeader icon="💡" title="おすすめ商品" linkText="もっと見る ›" linkHref="/products" />
+            <div className="flex" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+              {([['recommend', 'あなたへのおすすめ'], ['new', '新着商品'], ['sale', 'セール']] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setProductTab(key)}
+                  className="cursor-pointer border-none bg-transparent transition-colors duration-[120ms]"
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '0.78rem',
+                    fontWeight: productTab === key ? 700 : 400,
+                    color: productTab === key ? 'var(--color-primary)' : '#666',
+                    borderBottom: `2px solid ${productTab === key ? 'var(--color-primary)' : 'transparent'}`,
+                  }}
                 >
-                  <div className="h-44 bg-gray-100 relative overflow-hidden">
-                    {product.imageUrl ? (
-                      <Image
-                        src={product.imageUrl}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400 text-xs">
-                        No Image
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-5 grid-separator">
+              {(productTab === 'sale' ? (hotDeals ?? []).slice(0, 10) : gridProducts).map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+              {gridProducts.length === 0 && (
+                <div className="col-span-5 py-12 text-center" style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                  商品を読み込み中...
+                </div>
+              )}
+            </div>
+          </SectionBox>
+
+          {/* Ranking */}
+          <SectionBox>
+            <SectionHeader icon="🏆" title="売れ筋ランキング" linkText="全ランキングを見る ›" linkHref="/products" />
+            <div className="flex" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+              {['総合', 'ファッション', '家電・PC', '食品'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setRankingTab(tab)}
+                  className="cursor-pointer border-none bg-transparent"
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '0.78rem',
+                    fontWeight: rankingTab === tab ? 700 : 400,
+                    color: rankingTab === tab ? 'var(--color-primary)' : '#666',
+                    borderBottom: `2px solid ${rankingTab === tab ? 'var(--color-primary)' : 'transparent'}`,
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 grid-separator">
+              {rankingProducts
+                .filter((item) => {
+                  if (rankingTab === '総合') return true;
+                  return item.category?.name?.includes(rankingTab) || rankingTab.includes(item.category?.name);
+                })
+                .slice(0, 6)
+                .map((item, idx) => {
+                  const { displayPrice } = calcDiscount(item);
+                  return (
+                    <Link
+                      key={item.id}
+                      href={`/products/${item.id}`}
+                      className="flex items-center gap-2.5 bg-white transition-colors duration-[120ms] hover:bg-[var(--color-hover-red-bg)]"
+                      style={{ padding: '10px 12px' }}
+                    >
+                      <span className="min-w-[24px] font-bold" style={{ fontSize: '1.4rem', color: getRankColor(idx + 1) }}>
+                        {idx + 1}
+                      </span>
+                      <div
+                        className="flex shrink-0 items-center justify-center overflow-hidden rounded-[3px]"
+                        style={{ width: 52, height: 52, background: '#f5f5f5' }}
+                      >
+                        {item.imageUrl ? (
+                          <Image src={item.imageUrl} alt={item.name} width={52} height={52} className="object-cover" />
+                        ) : (
+                          <span style={{ fontSize: '1.6rem' }}>{categoryIconMap[item.category?.name] || '📦'}</span>
+                        )}
                       </div>
-                    )}
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate" style={{ fontSize: '0.78rem', color: 'var(--color-text)' }}>{item.name}</div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold" style={{ color: 'var(--color-price)', fontSize: '0.9rem' }}>
+                            {formatPrice(displayPrice)}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+            </div>
+          </SectionBox>
+
+          {/* Coupons */}
+          <SectionBox>
+            <SectionHeader icon="🎟" title="お得なクーポン" linkText="クーポン一覧 ›" linkHref="/products" />
+            <div className="grid grid-cols-4 gap-2 p-3">
+              {coupons.map((c, i) => (
+                <div
+                  key={i}
+                  className="relative cursor-pointer overflow-hidden rounded-[6px] bg-white p-3 text-center transition-colors duration-[120ms] hover:bg-[var(--color-hover-red-bg)]"
+                  style={{ border: '2px dashed var(--color-primary)' }}
+                >
+                  <div className="absolute top-0 right-0 left-0 h-[3px]" style={{ background: 'linear-gradient(90deg, #ff0033, #ff9a00)' }} />
+                  <div className="mt-1.5">
+                    <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-primary)' }}>{c.value}</span>
+                    <span className="font-bold" style={{ fontSize: '0.85rem', color: 'var(--color-primary)' }}>{c.unit}</span>
                   </div>
-                  <div className="p-3.5">
-                    <p className="text-xs text-[#1a6b1f] font-medium mb-1">{product.category.name}</p>
-                    <h3 className="font-semibold text-gray-800 text-sm mb-1.5 truncate">{product.name}</h3>
-                    <p className="text-[#1a6b1f] font-bold text-sm">¥{product.price.toLocaleString()}</p>
+                  <div className="mt-1" style={{ fontSize: '0.72rem', color: '#666' }}>{c.desc}</div>
+                  <div className="mt-0.5" style={{ fontSize: '0.65rem', color: '#999' }}>{c.expires}</div>
+                  <button
+                    onClick={() => handleCouponGet(i)}
+                    className="mt-2 cursor-pointer rounded-[20px] border-none font-bold text-white transition-colors duration-150"
+                    style={{
+                      background: couponStates[i] ? 'var(--color-green)' : 'var(--color-primary)',
+                      padding: '5px 16px',
+                      fontSize: '0.68rem',
+                    }}
+                  >
+                    {couponStates[i] ? '✓ 取得済み' : '取得する'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </SectionBox>
+
+          {/* History */}
+          <SectionBox>
+            <SectionHeader icon="🕐" title="閲覧履歴" linkText="履歴をクリア" linkHref="#" />
+            <div className="history-scrollbar flex overflow-x-auto grid-separator">
+              {historyProducts.map((item) => {
+                const { displayPrice } = calcDiscount(item);
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/products/${item.id}`}
+                    className="shrink-0 bg-white p-3 text-center transition-colors duration-[120ms] hover:bg-[var(--color-hover-red-bg)]"
+                    style={{ minWidth: 100 }}
+                  >
+                    <div
+                      className="mx-auto mb-1.5 flex items-center justify-center overflow-hidden rounded"
+                      style={{ width: 72, height: 72, background: '#f5f5f5' }}
+                    >
+                      {item.imageUrl ? (
+                        <Image src={item.imageUrl} alt={item.name} width={72} height={72} className="object-cover" />
+                      ) : (
+                        <span style={{ fontSize: '2rem' }}>{categoryIconMap[item.category?.name] || '📦'}</span>
+                      )}
+                    </div>
+                    <div className="font-bold" style={{ color: 'var(--color-price)', fontSize: '0.82rem' }}>
+                      {formatPrice(displayPrice)}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </SectionBox>
+        </main>
+      </div>
+
+      {/* Footer */}
+      <footer className="mt-3 bg-white" style={{ borderTop: '3px solid var(--color-primary)' }}>
+        <div className="mx-auto" style={{ maxWidth: 1200, padding: '24px 12px' }}>
+          <div className="mb-6 flex flex-wrap" style={{ gap: '0 48px' }}>
+            {footerLinks.map((col) => (
+              <div key={col.title} style={{ minWidth: 140 }}>
+                <div className="mb-2 font-bold" style={{ fontSize: '0.8rem' }}>{col.title}</div>
+                {col.links.map((link) => (
+                  <div key={link} className="mb-1">
+                    <Link
+                      href="/products"
+                      className="transition-colors duration-150 hover:text-[var(--color-primary)]"
+                      style={{ fontSize: '0.75rem', color: '#666' }}
+                    >
+                      {link}
+                    </Link>
                   </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2" style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: 16 }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>
+              <span style={{ color: 'var(--color-primary)' }}>モール</span>
+              <span style={{ color: 'var(--color-text)' }}>ショップ</span>
+            </div>
+            <div className="flex gap-4">
+              {footerBottom.map((item) => (
+                <Link
+                  key={item}
+                  href="/about"
+                  className="transition-colors duration-150 hover:text-[var(--color-primary)]"
+                  style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}
+                >
+                  {item}
                 </Link>
               ))}
             </div>
-          </section>
-        )}
+          </div>
+          <div className="mt-3 text-center" style={{ fontSize: '0.72rem', color: 'var(--color-text-very-light)' }}>
+            © 2026 モールショップ. All Rights Reserved.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
 
-        {/* ─── CTA Banner (ゲスト向け登録促進) ─── */}
-        {_hasHydrated && !user && (
-          <section className="mb-12 bg-[#1a6b1f] rounded-2xl px-8 py-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h2 className="text-xl font-bold mb-1">会員登録で、もっと便利に</h2>
-              <p className="text-white/80 text-sm">注文履歴の管理、かんたん再注文、会員限定特典が使えます。</p>
-            </div>
-            <Link
-              href="/register"
-              className="bg-white text-[#1a6b1f] hover:bg-gray-50 font-semibold px-8 py-3 rounded-full text-sm whitespace-nowrap transition-colors shadow"
-            >
-              無料で登録する
-            </Link>
-          </section>
+// ── Sub-components ──
+
+function SidebarBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded bg-white" style={{ border: '1px solid var(--color-border)' }}>
+      {children}
+    </div>
+  );
+}
+
+function SectionBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded bg-white" style={{ border: '1px solid var(--color-border)' }}>
+      {children}
+    </div>
+  );
+}
+
+function SectionHeader({ icon, title, linkText, linkHref }: { icon: string; title: string; linkText: string; linkHref: string }) {
+  return (
+    <div className="flex items-center justify-between" style={{ padding: '10px 14px' }}>
+      <h2 className="flex items-center gap-1.5 font-bold" style={{ fontSize: '0.95rem' }}>
+        <span>{icon}</span> {title}
+      </h2>
+      <Link href={linkHref} style={{ fontSize: '0.72rem', color: 'var(--color-primary)' }}>
+        {linkText}
+      </Link>
+    </div>
+  );
+}
+
+function ProductCard({ product }: { product: Product }) {
+  const { displayPrice, oldPrice, discountLabel } = calcDiscount(product);
+  const badge = product.isHotDeal
+    ? { text: 'SALE', bg: '#ff0033', color: 'white' }
+    : product.discountPercent && product.discountPercent >= 40
+      ? { text: `${product.discountPercent}%OFF`, bg: '#f5a623', color: '#333' }
+      : null;
+
+  return (
+    <Link
+      href={`/products/${product.id}`}
+      className="relative block bg-white p-3 transition-shadow duration-[120ms] hover:shadow-[inset_0_0_0_2px_var(--color-primary)]"
+      style={{ color: 'var(--color-text)' }}
+    >
+      {badge && (
+        <span
+          className="absolute top-2 left-2 z-10 rounded-[2px] font-bold"
+          style={{ fontSize: '0.6rem', padding: '2px 6px', background: badge.bg, color: badge.color }}
+        >
+          {badge.text}
+        </span>
+      )}
+
+      <div
+        className="mb-2 flex items-center justify-center overflow-hidden rounded"
+        style={{ aspectRatio: '1', background: '#f5f5f5' }}
+      >
+        {product.imageUrl ? (
+          <Image src={product.imageUrl} alt={product.name} width={200} height={200} className="h-full w-full object-cover" />
+        ) : (
+          <span style={{ fontSize: '3rem' }}>{categoryIconMap[product.category?.name] || '📦'}</span>
         )}
       </div>
-    </>
+
+      <div className="mb-0.5" style={{ fontSize: '0.68rem', color: 'var(--color-text-muted)' }}>
+        {product.category?.name}
+      </div>
+
+      <div
+        className="mb-1"
+        style={{
+          fontSize: '0.78rem',
+          lineHeight: 1.3,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}
+      >
+        {product.name}
+      </div>
+
+      <div className="flex flex-wrap items-baseline gap-1">
+        <span className="font-bold" style={{ fontSize: '1.05rem', color: 'var(--color-price)' }}>
+          {formatPrice(displayPrice)}
+        </span>
+        {oldPrice && (
+          <span className="line-through" style={{ fontSize: '0.72rem', color: 'var(--color-text-light)' }}>
+            {formatPrice(oldPrice)}
+          </span>
+        )}
+        {discountLabel && (
+          <span className="rounded-[2px] font-bold text-white" style={{ fontSize: '0.6rem', background: 'var(--color-primary)', padding: '1px 4px' }}>
+            {discountLabel}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-0.5" style={{ fontSize: '0.68rem', color: 'var(--color-point)' }}>
+        🟡 {Math.floor(displayPrice * 0.05)}ポイント
+      </div>
+
+      {product.stock <= 10 && product.stock > 0 && (
+        <div className="mt-1">
+          <span className="rounded-[2px]" style={{ fontSize: '0.62rem', border: '1px solid #ddd', padding: '1px 4px', color: '#666' }}>
+            残り{product.stock}点
+          </span>
+        </div>
+      )}
+    </Link>
   );
 }

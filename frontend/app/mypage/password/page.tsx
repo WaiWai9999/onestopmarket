@@ -54,7 +54,7 @@ export default function ChangePasswordPage() {
 
   if (!user) return null;
 
-  const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1a6b1f] focus:border-transparent';
+  const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#ff0033] focus:border-transparent';
 
   return (
     <div>
@@ -97,7 +97,7 @@ export default function ChangePasswordPage() {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="w-full bg-[#1a6b1f] hover:bg-[#155318] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
+            className="w-full bg-[#ff0033] hover:bg-[#cc0029] text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
           >
             {mutation.isPending ? '変更中...' : 'パスワードを変更'}
           </button>

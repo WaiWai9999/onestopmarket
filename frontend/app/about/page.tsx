@@ -2,9 +2,9 @@
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a6b1f]/5 via-white to-[#1a6b1f]/10">
+    <div className="min-h-screen bg-gradient-to-br from-[#ff0033]/5 via-white to-[#ff0033]/10">
       {/* Header */}
-      <div className="bg-[#1a6b1f] text-white px-6 py-20 text-center">
+      <div className="bg-[#ff0033] text-white px-6 py-20 text-center">
         <h1 className="text-5xl font-bold mb-4">OneStopMarketについて</h1>
         <p className="text-xl text-white/80 max-w-2xl mx-auto">
           便利で快適なショッピング体験を、すべての方に
@@ -25,7 +25,7 @@ export default function AboutPage() {
               商品の品質からカスタマーサポートまで、あらゆる面で卓越したサービスを提供することに全力を尽くしています。
             </p>
           </div>
-          <div className="bg-gradient-to-br from-[#1a6b1f] to-[#2d8f33] rounded-2xl h-96 shadow-xl flex items-center justify-center">
+          <div className="bg-gradient-to-br from-[#ff0033] to-[#e6002d] rounded-2xl h-96 shadow-xl flex items-center justify-center">
             <div className="text-center text-white">
               <svg className="w-24 h-24 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -72,7 +72,7 @@ export default function AboutPage() {
               icon: '👥'
             }
           ].map((value) => (
-            <div key={value.title} className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-[#1a6b1f] hover:shadow-lg transition-all duration-300">
+            <div key={value.title} className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-[#ff0033] hover:shadow-lg transition-all duration-300">
               <div className="text-4xl mb-4">{value.icon}</div>
               <h3 className="text-xl font-bold text-gray-800 mb-3">{value.title}</h3>
               <p className="text-gray-600 leading-relaxed">{value.desc}</p>
@@ -82,7 +82,7 @@ export default function AboutPage() {
       </div>
 
       {/* Stats Section */}
-      <div className="bg-[#1a6b1f] py-16 mb-20">
+      <div className="bg-[#ff0033] py-16 mb-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center text-white">
             {[
@@ -110,17 +110,17 @@ export default function AboutPage() {
           <div className="flex flex-col md:flex-row justify-center gap-6">
             <div>
               <p className="text-sm text-gray-500 mb-1">メール</p>
-              <p className="text-lg font-semibold text-[#1a6b1f]">support@onestopmarket.com</p>
+              <p className="text-lg font-semibold text-[#ff0033]">support@onestopmarket.com</p>
             </div>
             <div className="hidden md:block border-l border-gray-300"></div>
             <div>
               <p className="text-sm text-gray-500 mb-1">電話</p>
-              <p className="text-lg font-semibold text-[#1a6b1f]">+81-3-XXXX-XXXX</p>
+              <p className="text-lg font-semibold text-[#ff0033]">+81-3-XXXX-XXXX</p>
             </div>
             <div className="hidden md:block border-l border-gray-300"></div>
             <div>
               <p className="text-sm text-gray-500 mb-1">営業時間</p>
-              <p className="text-lg font-semibold text-[#1a6b1f]">24時間対応</p>
+              <p className="text-lg font-semibold text-[#ff0033]">24時間対応</p>
             </div>
           </div>
         </div>

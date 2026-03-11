@@ -151,7 +151,7 @@ export default function AdminProductsPage() {
           className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
             showForm
               ? 'border border-gray-300 text-gray-600 hover:border-gray-400'
-              : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+              : 'bg-[#ff0033]/10 text-[#ff0033] hover:bg-[#ff0033]/20'
           }`}
         >
           {showForm ? 'Cancel' : '+ New Product'}
@@ -170,7 +170,7 @@ export default function AdminProductsPage() {
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ff0033]"
               />
             </div>
             <div>
@@ -179,7 +179,7 @@ export default function AdminProductsPage() {
                 required
                 value={form.categoryId}
                 onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ff0033]"
               >
                 <option value="">Select category</option>
                 {categories?.map((c: { id: string; name: string }) => (
@@ -194,7 +194,7 @@ export default function AdminProductsPage() {
                 type="number"
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ff0033]"
               />
             </div>
             <div>
@@ -204,7 +204,7 @@ export default function AdminProductsPage() {
                 type="number"
                 value={form.stock}
                 onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ff0033]"
               />
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function AdminProductsPage() {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ff0033]"
             />
           </div>
           <div>
@@ -232,7 +232,7 @@ export default function AdminProductsPage() {
           <button
             type="submit"
             disabled={saveMutation.isPending}
-            className="bg-amber-400 text-gray-900 font-semibold px-6 py-2 rounded-full hover:bg-amber-300 disabled:opacity-50 transition-all"
+            className="bg-[#ff0033] text-white font-semibold px-6 py-2 rounded-full hover:bg-[#cc0029] disabled:opacity-50 transition-all"
           >
             {saveMutation.isPending ? 'Saving...' : editingId ? 'Update Product' : 'Save Product'}
           </button>
@@ -243,7 +243,7 @@ export default function AdminProductsPage() {
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         <table className="w-full">
           <thead>
-          <tr className="bg-gradient-to-r from-orange-100 to-teal-100">
+          <tr className="bg-[#ff0033]/5">
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Image</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Category</th>
@@ -254,7 +254,7 @@ export default function AdminProductsPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {data?.data.map((product: Product) => (
-              <tr key={product.id} className="hover:bg-amber-50 transition-colors">
+              <tr key={product.id} className="hover:bg-[#ff0033]/5 transition-colors">
                 <td className="px-4 py-3">
                   <div className="w-11 h-11 bg-gray-100 rounded-lg relative overflow-hidden">
                     {product.imageUrl ? (
@@ -266,7 +266,7 @@ export default function AdminProductsPage() {
                 </td>
                 <td className="px-4 py-3 font-medium text-gray-800">{product.name}</td>
                 <td className="px-4 py-3">
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-xs bg-[#ff0033]/10 text-[#ff0033] px-2 py-0.5 rounded-full font-medium">
                     {product.category.name}
                   </span>
                 </td>
@@ -280,7 +280,7 @@ export default function AdminProductsPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleEdit(product)}
-                      className="text-amber-600 hover:text-amber-800 text-sm font-medium"
+                      className="text-[#ff0033] hover:text-[#cc0029] text-sm font-medium"
                     >
                       Edit
                     </button>
