@@ -19,7 +19,20 @@ export class UsersController {
   @Patch('me')
   updateProfile(
     @CurrentUser() user: any,
-    @Body() dto: { name?: string; email?: string; address?: string; phone?: string },
+    @Body() dto: {
+      name?: string;
+      email?: string;
+      address?: string;
+      phone?: string;
+      lastName?: string;
+      firstName?: string;
+      lastNameKana?: string;
+      firstNameKana?: string;
+      postalCode?: string;
+      prefecture?: string;
+      city?: string;
+      addressLine?: string;
+    },
   ) {
     return this.usersService.updateProfile(user.id, dto);
   }

@@ -92,15 +92,39 @@ export default function CheckoutPage() {
     enabled: !!user,
   });
 
-  const { data: profile } = useQuery<{ name: string; address: string | null }>({
+  const { data: profile } = useQuery<{
+    name: string;
+    address: string | null;
+    phone: string | null;
+    lastName: string | null;
+    firstName: string | null;
+    lastNameKana: string | null;
+    firstNameKana: string | null;
+    postalCode: string | null;
+    prefecture: string | null;
+    city: string | null;
+    addressLine: string | null;
+  }>({
     queryKey: ['profile'],
     queryFn: () => api.get('/users/me').then((r) => r.data),
     enabled: !!user,
   });
 
   useEffect(() => {
-    if (profile?.address) setAddressLine(profile.address);
-    if (profile?.name) {
+    if (!profile) return;
+    // Structured fields take priority
+    if (profile.lastName) setLastName(profile.lastName);
+    if (profile.firstName) setFirstName(profile.firstName);
+    if (profile.lastNameKana) setLastNameKana(profile.lastNameKana);
+    if (profile.firstNameKana) setFirstNameKana(profile.firstNameKana);
+    if (profile.postalCode) setPostalCode(profile.postalCode);
+    if (profile.prefecture) setPrefecture(profile.prefecture);
+    if (profile.city) setCity(profile.city);
+    if (profile.addressLine) setAddressLine(profile.addressLine);
+    if (profile.phone) setPhone(profile.phone);
+
+    // Fallback: if no structured name, split from name
+    if (!profile.lastName && !profile.firstName && profile.name) {
       const parts = profile.name.split(' ');
       if (parts.length >= 2) {
         setLastName(parts[0]);
@@ -108,6 +132,10 @@ export default function CheckoutPage() {
       } else {
         setLastName(profile.name);
       }
+    }
+    // Fallback: if no structured address, use address field
+    if (!profile.postalCode && !profile.prefecture && !profile.city && !profile.addressLine && profile.address) {
+      setAddressLine(profile.address);
     }
   }, [profile]);
 

@@ -9,15 +9,23 @@ datasource db {
 
 // ─── User ───────────────────────────────────────────────
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      Role     @default(CUSTOMER)
-  address   String?
-  phone     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String
+  name          String
+  role          Role     @default(CUSTOMER)
+  address       String?
+  phone         String?
+  lastName      String?
+  firstName     String?
+  lastNameKana  String?
+  firstNameKana String?
+  postalCode    String?
+  prefecture    String?
+  city          String?
+  addressLine   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   cart      Cart?
   orders    Order[]

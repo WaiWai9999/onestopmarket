@@ -29,7 +29,20 @@ export class UsersService {
     return { message: 'Password changed successfully' };
   }
 
-  async updateProfile(userId: string, dto: { name?: string; email?: string; address?: string; phone?: string }) {
+  async updateProfile(userId: string, dto: {
+    name?: string;
+    email?: string;
+    address?: string;
+    phone?: string;
+    lastName?: string;
+    firstName?: string;
+    lastNameKana?: string;
+    firstNameKana?: string;
+    postalCode?: string;
+    prefecture?: string;
+    city?: string;
+    addressLine?: string;
+  }) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -39,10 +52,40 @@ export class UsersService {
     }
 
     const data: Record<string, unknown> = {};
-    if (dto.name) data.name = dto.name;
     if (dto.email) data.email = dto.email;
-    if (dto.address !== undefined) data.address = dto.address;
     if (dto.phone !== undefined) data.phone = dto.phone;
+
+    // Structured name fields
+    if (dto.lastName !== undefined) data.lastName = dto.lastName;
+    if (dto.firstName !== undefined) data.firstName = dto.firstName;
+    if (dto.lastNameKana !== undefined) data.lastNameKana = dto.lastNameKana;
+    if (dto.firstNameKana !== undefined) data.firstNameKana = dto.firstNameKana;
+
+    // Auto-compute name from structured fields
+    if (dto.lastName !== undefined || dto.firstName !== undefined) {
+      const ln = dto.lastName ?? user.lastName ?? '';
+      const fn = dto.firstName ?? user.firstName ?? '';
+      data.name = `${ln} ${fn}`.trim();
+    } else if (dto.name) {
+      data.name = dto.name;
+    }
+
+    // Structured address fields
+    if (dto.postalCode !== undefined) data.postalCode = dto.postalCode;
+    if (dto.prefecture !== undefined) data.prefecture = dto.prefecture;
+    if (dto.city !== undefined) data.city = dto.city;
+    if (dto.addressLine !== undefined) data.addressLine = dto.addressLine;
+
+    // Auto-compute address from structured fields
+    if (dto.postalCode !== undefined || dto.prefecture !== undefined || dto.city !== undefined || dto.addressLine !== undefined) {
+      const pc = dto.postalCode ?? user.postalCode ?? '';
+      const pref = dto.prefecture ?? user.prefecture ?? '';
+      const ct = dto.city ?? user.city ?? '';
+      const al = dto.addressLine ?? user.addressLine ?? '';
+      data.address = pc ? `〒${pc} ${pref}${ct}${al}` : `${pref}${ct}${al}`;
+    } else if (dto.address !== undefined) {
+      data.address = dto.address;
+    }
 
     const updated = await this.prisma.user.update({ where: { id: userId }, data });
     const { password: _, ...rest } = updated;
