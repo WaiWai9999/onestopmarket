@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import Image from 'next/image';
 import api from '@/lib/axios';
@@ -41,6 +41,7 @@ const effectivePrice = (p: { price: number; discountPrice: number | null }) =>
 export default function CheckoutPage() {
   const { user, _hasHydrated } = useAuthStore();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   // Address fields
   const [lastName, setLastName] = useState('');
@@ -180,6 +181,7 @@ export default function CheckoutPage() {
     try {
       const shippingAddress = `〒${postalCode} ${prefecture}${city}${addressLine}`;
       const { data } = await api.post('/orders/checkout', { shippingAddress });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
       const num = `#MS-2026-${data.orderId.slice(0, 6).toUpperCase()}`;
       setOrderNumber(num);
       setShowModal(true);

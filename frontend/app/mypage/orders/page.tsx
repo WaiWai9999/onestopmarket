@@ -167,6 +167,62 @@ export default function OrdersPage() {
     });
   };
 
+  const openInvoice = (order: Order) => {
+    const w = window.open('', '_blank', 'width=800,height=900');
+    if (!w) return;
+    const itemsHtml = order.items.map((item) =>
+      `<tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:0.85rem">${item.product.name}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:0.85rem;text-align:center">${item.quantity}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:0.85rem;text-align:right">&yen;${item.price.toLocaleString()}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:0.85rem;text-align:right">&yen;${(item.price * item.quantity).toLocaleString()}</td>
+      </tr>`
+    ).join('');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>領収書 #${order.id.slice(0, 10).toUpperCase()}</title>
+      <style>body{font-family:-apple-system,sans-serif;margin:0;padding:40px;color:#222}
+      @media print{.no-print{display:none}}</style></head><body>
+      <div style="max-width:700px;margin:0 auto">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+          <div><span style="font-size:1.4rem;font-weight:700"><span style="color:#ff0033">モール</span>ショップ</span>
+            <p style="font-size:0.75rem;color:#888;margin:4px 0 0">株式会社モールショップ</p></div>
+          <div style="text-align:right"><h1 style="font-size:1.6rem;font-weight:700;margin:0;color:#222">領 収 書</h1>
+            <p style="font-size:0.78rem;color:#888;margin:4px 0 0">発行日: ${new Date().toLocaleDateString('ja-JP')}</p></div>
+        </div>
+        <div style="background:#f8f8f8;border:1px solid #e0e0e0;border-radius:4px;padding:16px 20px;margin-bottom:20px">
+          <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div><p style="font-size:0.72rem;color:#888;margin:0 0 2px">注文番号</p><p style="font-size:0.9rem;font-weight:700;margin:0">#${order.id.slice(0, 10).toUpperCase()}</p></div>
+            <div><p style="font-size:0.72rem;color:#888;margin:0 0 2px">注文日時</p><p style="font-size:0.9rem;margin:0">${formatDateTime(order.createdAt)}</p></div>
+            <div><p style="font-size:0.72rem;color:#888;margin:0 0 2px">お届け先</p><p style="font-size:0.9rem;margin:0">${order.shippingAddress || '—'}</p></div>
+          </div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+          <thead><tr style="background:#fafafa;border-bottom:2px solid #ff0033">
+            <th style="padding:8px 12px;text-align:left;font-size:0.78rem;color:#555">商品名</th>
+            <th style="padding:8px 12px;text-align:center;font-size:0.78rem;color:#555">数量</th>
+            <th style="padding:8px 12px;text-align:right;font-size:0.78rem;color:#555">単価</th>
+            <th style="padding:8px 12px;text-align:right;font-size:0.78rem;color:#555">小計</th>
+          </tr></thead>
+          <tbody>${itemsHtml}</tbody>
+        </table>
+        <div style="display:flex;justify-content:flex-end">
+          <div style="width:250px">
+            <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem"><span>商品合計</span><span>&yen;${order.total.toLocaleString()}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem"><span>送料</span><span style="color:#2e7d32">&yen;0（送料無料）</span></div>
+            <hr style="border:none;border-top:2px solid #222;margin:8px 0">
+            <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:1.1rem;font-weight:700"><span>合計（税込）</span><span>&yen;${order.total.toLocaleString()}</span></div>
+          </div>
+        </div>
+        <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e0e0e0;font-size:0.72rem;color:#aaa;text-align:center">
+          <p style="margin:0 0 4px">株式会社モールショップ｜〒100-0001 東京都千代田区千代田1-1-1 モールショップビル 5F</p>
+          <p style="margin:0">TEL: +81-3-XXXX-XXXX｜Email: support@onestopmarket.com</p>
+        </div>
+        <div class="no-print" style="text-align:center;margin-top:24px">
+          <button onclick="window.print()" style="background:#ff0033;color:white;border:none;padding:10px 32px;border-radius:4px;font-size:0.9rem;font-weight:700;cursor:pointer">印刷 / PDF保存</button>
+        </div>
+      </div></body></html>`);
+    w.document.close();
+  };
+
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -678,7 +734,7 @@ export default function OrdersPage() {
             {/* Modal footer */}
             <div className="px-[18px] py-3.5 border-t border-[#e0e0e0] flex gap-2 justify-end bg-[#fafafa]">
               <button
-                onClick={() => showToast('領収書をダウンロードしました')}
+                onClick={() => openInvoice(modalOrder)}
                 className="text-[0.75rem] py-1.5 px-3.5 rounded-[3px] cursor-pointer bg-white border border-[#ddd] text-[#555] hover:border-[#ff0033] hover:text-[#ff0033] transition-all"
               >
                 📄 領収書

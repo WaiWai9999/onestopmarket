@@ -59,6 +59,9 @@ export class OrdersService {
       data: { stripePaymentId: paymentIntent.id },
     });
 
+    // Clear the user's cart after order creation
+    await this.cartService.clearCart(userId);
+
     return {
       orderId: order.id,
       clientSecret: paymentIntent.client_secret, // sent to frontend to complete payment
